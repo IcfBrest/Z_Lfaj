@@ -1,0 +1,31 @@
+{
+  "mode": "inline",
+  "source": "approved-plan",
+  "rationale": "三轮grilling 16项决策共识达成(2026-10-15用户确认)+doc/求职平台调研方案.md v2终稿批准，proposal/tasks为该共识的Phase 0细化",
+  "waves": [
+    {
+      "id": "implementation",
+      "strategy": "serial",
+      "tasks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:7cf48275ea18a1cc5d17c25718b0594db6cd24375fe81172b48762f5c1dbb923",
+  "contract_hash": null,
+  "workflow": "full",
+  "revision": 1,
+  "schema_version": 2,
+  "review_policy": "final",
+  "hash": "sha256:8ac0c78ffeefa4a62aa3f48b8c078235b19a1e8f3e19b4531cbcd148c2dd5535"
+}
