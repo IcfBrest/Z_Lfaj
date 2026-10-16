@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "mimosa-hook-status/v1",
+  "recordedAt": "2026-10-16T01:05:18.050Z",
+  "sessionId": "sess_914cb0f3-e453-4ac9-9677-c9403b4151d8",
+  "event": "PostToolUse",
+  "toolName": "Write",
+  "file": "D:\\WorkProject\\Zql_Lfaj\\README.md",
+  "outcome": "clear",
+  "coverage": "complete",
+  "findingCount": 0,
+  "durationMs": 7,
+  "hostState": "hook_complete",
+  "reportHint": ".mimosa/reports/"
+}

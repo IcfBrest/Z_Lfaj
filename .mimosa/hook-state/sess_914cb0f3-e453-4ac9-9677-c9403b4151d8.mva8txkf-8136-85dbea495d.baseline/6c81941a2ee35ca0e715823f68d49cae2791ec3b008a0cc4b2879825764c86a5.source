@@ -1,0 +1,54 @@
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from ..db import get_db
+from ..models import BackgroundTask, User, utcnow
+from .deps import get_current_user
+from .jobs import run_job_parse
+from .resumes import run_resume_parse
+
+router = APIRouter(prefix="/api/tasks", tags=["tasks"])
+
+
+@router.get("/{task_id}")
+def get_task(task_id: str, db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> dict:
+    task = db.get(BackgroundTask, task_id)
+    if task is None or (task.user_id != user.id and not user.is_admin):
+        raise HTTPException(404, "任务不存在")
+    return {
+        "id": task.id,
+        "kind": task.kind,
+        "status": task.status,
+        "ref_type": task.ref_type,
+        "ref_id": task.ref_id,
+        "error": task.error,
+        "created_at": task.created_at.isoformat(),
+    }
+
+
+@router.post("/{task_id}/retry", status_code=202)
+def retry_task(
+    task_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> dict:
+    task = db.get(BackgroundTask, task_id)
+    if task is None or (task.user_id != user.id and not user.is_admin):
+        raise HTTPException(404, "任务不存在")
+    if task.status not in ("failed",):
+        raise HTTPException(400, "只有失败的任务可以重试")
+
+    runner = {"job_parse": run_job_parse, "resume_parse": run_resume_parse}.get(task.kind)
+    if runner is None:
+        raise HTTPException(400, f"不支持重试的任务类型：{task.kind}")
+
+    task.status = "pending"
+    task.error = None
+    task.updated_at = utcnow()
+    db.commit()
+
+    from ..db import SessionLocal
+
+    background_tasks.add_task(runner, task.id, SessionLocal)
+    return {"task_id": task.id, "status": "pending"}
