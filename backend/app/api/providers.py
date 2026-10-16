@@ -102,12 +102,13 @@ def delete_provider(provider_id: int, db: Session = Depends(get_db), user: User 
 @router.post("/{provider_id}/test")
 def test_provider(provider_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> dict:
     p = _own(db, user, provider_id)
+    model = (p.task_models or {}).get("parse") or p.default_model or "deepseek-chat"
     started = time.monotonic()
     try:
-        raw = llm_gateway._invoke(
-            p,
-            (p.task_models or {}).get("parse") or p.default_model or "deepseek-chat",
-            [{"role": "user", "content": "回复一个字：好"}],
+        raw = llm_gateway._invoke(p, model, [{"role": "user", "content": "回复一个字：好"}])
+        llm_gateway._record(
+            db, user.id, "connectivity", p, model, raw,
+            int((time.monotonic() - started) * 1000), "ok", None,
         )
         return {
             "ok": True,
@@ -115,4 +116,8 @@ def test_provider(provider_id: int, db: Session = Depends(get_db), user: User = 
             "model_reply": raw["content"][:50],
         }
     except Exception as exc:
+        llm_gateway._record(
+            db, user.id, "connectivity", p, model, {},
+            int((time.monotonic() - started) * 1000), "error", str(exc)[:500],
+        )
         return {"ok": False, "latency_ms": int((time.monotonic() - started) * 1000), "error": str(exc)[:300]}

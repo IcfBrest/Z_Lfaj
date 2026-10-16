@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import InvitationCode, User, utcnow
+from ..models import InvitationCode, User
 from ..security import hash_password
 from .deps import require_admin
 
@@ -98,5 +98,4 @@ def revoke_invitation(code: str, db: Session = Depends(get_db), admin: User = De
     if item.used_by is not None:
         raise HTTPException(400, "邀请码已被使用，不能作废")
     item.is_revoked = True
-    item.updated_at = utcnow() if hasattr(item, "updated_at") else None
     db.commit()
