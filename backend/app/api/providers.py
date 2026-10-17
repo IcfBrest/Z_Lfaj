@@ -22,6 +22,15 @@ class ProviderIn(BaseModel):
     enabled: bool = True
 
 
+class ProviderUpdateIn(BaseModel):
+    name: str = Field(min_length=1, max_length=64)
+    base_url: str = Field(min_length=1, max_length=255)
+    api_key: str | None = None  # None 或含掩码标记 → 保留旧 key
+    default_model: str | None = None
+    task_models: dict[str, str] = {}
+    enabled: bool = True
+
+
 class ProviderOut(BaseModel):
     id: int
     name: str
@@ -78,7 +87,10 @@ def create_provider(body: ProviderIn, db: Session = Depends(get_db), user: User 
 
 @router.put("/{provider_id}")
 def update_provider(
-    provider_id: int, body: ProviderIn, db: Session = Depends(get_db), user: User = Depends(get_current_user)
+    provider_id: int,
+    body: ProviderUpdateIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> dict:
     p = _own(db, user, provider_id)
     p.name = body.name
@@ -86,7 +98,7 @@ def update_provider(
     p.default_model = body.default_model
     p.task_models = body.task_models
     p.enabled = body.enabled
-    if body.api_key and not body.api_key.startswith("***"):
+    if body.api_key and "***" not in body.api_key:
         p.api_key_encrypted = encrypt_text(body.api_key)
     db.commit()
     return _out(p)
