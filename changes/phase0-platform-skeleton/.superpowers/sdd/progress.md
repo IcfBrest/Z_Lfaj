@@ -21,3 +21,10 @@
 **未解决风险**：compose PG 链路待 Docker 就绪后冒烟；litellm 真实出站未测（无真实 key，测试全 mock）。
 
 **下一步**：final review → workflow complete（验证命令 pytest -q）。
+## Execution Plan Resync
+- recorded_at: 2026-10-17T10:03:35.745Z
+- reason: 按官方模板补齐 proposal(Why/What Changes)/design/spec(OpenSpec delta)三件套，行为范围与已审实现一致，属非语义规划修正
+- previous_artifacts_hash: sha256:7cf48275ea18a1cc5d17c25718b0594db6cd24375fe81172b48762f5c1dbb923
+- artifacts_hash: sha256:53cf996560120a917976025d6906e3ecac63ea801c47dc1e46c88ad5d07b08dc
+- plan_hash: sha256:ab6561df1c3e4a532ae44ed7c0c882b7a6cdddd0a76765ddb00760a59b26b773
+- plan_revision: 1

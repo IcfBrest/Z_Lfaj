@@ -1,0 +1,6 @@
+{
+  "previous_plan_hash": "sha256:ab6561df1c3e4a532ae44ed7c0c882b7a6cdddd0a76765ddb00760a59b26b773",
+  "previous_revision": 1,
+  "reason": "补记 DP-4：计划内容与已执行波次完全一致（inline/final/单串行波次），仅补齐决策点记录",
+  "evidence": "mode-only: applicable evidence preserved"
+}

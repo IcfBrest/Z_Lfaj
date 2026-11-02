@@ -2,35 +2,31 @@
 # Progress and legacy approvals. Recover missing evidence; never infer approval from artifact existence.
 
 # === Core state ===
-state: exploring
+state: approved-for-build
 workflow: full
 workflow_variant: planned
 completion_outcome: null
 completion_reason: null
-revision: null
+revision: 2
 
 # === Hashes (fast staleness detection) ===
-artifacts_hash: null
+artifacts_hash: sha256:53cf996560120a917976025d6906e3ecac63ea801c47dc1e46c88ad5d07b08dc
 contract_hash: null
 
 # === Execution progress ===
-execution_mode: null
-execution_plan_hash: null
-execution_plan_revision: null
+execution_mode: inline
+execution_plan_hash: sha256:ab5ecaafaed797d8e48928f6702758e1c8676568dee95c22b6044b68522643a7
+execution_plan_revision: 2
 batches_completed: 0
 test_result: null
-spec_merged: false
-spec_publication_receipt: null
-
-# === Review anchor (recorded on the first entry into executing) ===
-review_base: null
-target_branch: null
+spec_merged: true
+spec_publication_receipt: eyJ2ZXJzaW9uIjoxLCJzb3VyY2VfaGFzaCI6InNoYTI1Njo5NTVlYmYxOTFiYjVmZjFmZTYzMmViZWUyNDY5NDY4ODQ1YzNkMzI4NzhjYjk3OTdkODY0NWNkOTdkZWViOGZhIiwiYmFzZWxpbmVfYmVmb3JlX2hhc2giOiJzaGEyNTY6MGI2NzdkYTMwNmIxY2QyMDBlYjYzYTdlYmQ5MTk4YTA5YTI2MTU1MWQ5ZGRlZTc4YjhlODg5YmIxMDFjODc1MCIsImJhc2VsaW5lX2FmdGVyX2hhc2giOiJzaGEyNTY6ZmE5NGE2YzQxNWNjZTcyZWM5MmQwNzA5ZmQ2N2NjNjI4ODlkN2JiZTU4MzQ0ZGY4NmE0ZGY3MDIyYmJkMDU4NyIsImNhcGFiaWxpdGllcyI6WyJwbGF0Zm9ybS1jb3JlIl19
 
 # === Metadata ===
 change_name: phase0-platform-skeleton
-last_transition: null
-last_transition_from: null
-last_transition_to: null
+last_transition: 2026-10-27T15:16:06.730Z
+last_transition_from: bridging
+last_transition_to: approved-for-build
 
 # === Decision points ===
 dp_0_result: null
@@ -45,12 +41,12 @@ dp_2_result: null
 dp_2_timestamp: null
 dp_2_decisions: null
 dp_2_confirmed: null
-dp_3_result: null
-dp_3_timestamp: null
+dp_3_result: pass
+dp_3_timestamp: 2026-10-27T15:16:06.171Z
 dp_3_decisions: null
 dp_3_confirmed: null
-dp_4_result: null
-dp_4_timestamp: null
+dp_4_result: inline: plan revision 2; user-confirmed-revision; 补记 DP-4：计划内容与已执行波次完全一致（inline/final/单串行波次），仅补齐决策点记录
+dp_4_timestamp: 2026-10-27T15:24:44.365Z
 dp_4_decisions: null
 dp_4_confirmed: null
 dp_5_result: null

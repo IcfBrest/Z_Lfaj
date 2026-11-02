@@ -1,7 +1,7 @@
 {
   "mode": "inline",
-  "source": "approved-plan",
-  "rationale": "三轮grilling 16项决策共识达成(2026-10-15用户确认)+doc/求职平台调研方案.md v2终稿批准，proposal/tasks为该共识的Phase 0细化",
+  "source": "user-confirmed-revision",
+  "rationale": "补记 DP-4：计划内容与已执行波次完全一致（inline/final/单串行波次），仅补齐决策点记录",
   "waves": [
     {
       "id": "implementation",
@@ -21,11 +21,84 @@
       "depends_on": []
     }
   ],
-  "artifacts_hash": "sha256:7cf48275ea18a1cc5d17c25718b0594db6cd24375fe81172b48762f5c1dbb923",
+  "artifacts_hash": "sha256:53cf996560120a917976025d6906e3ecac63ea801c47dc1e46c88ad5d07b08dc",
   "contract_hash": null,
   "workflow": "full",
-  "revision": 1,
-  "schema_version": 2,
+  "revision": 2,
   "review_policy": "final",
-  "hash": "sha256:8ac0c78ffeefa4a62aa3f48b8c078235b19a1e8f3e19b4531cbcd148c2dd5535"
+  "recommendation": {
+    "available_modes": [
+      "inline",
+      "batch-inline",
+      "sdd"
+    ],
+    "recommendation": {
+      "mode": "inline",
+      "reasons": [
+        "Native inline execution is the default. Choose SDD only when independently scoped delegation justifies its context and review overhead; task and wave counts alone do not justify it."
+      ]
+    },
+    "facts": {
+      "workflow": "full",
+      "documented_task_count": 10,
+      "planned_task_count": 10,
+      "planned_wave_count": 1,
+      "has_parallel_wave": false,
+      "inline_threshold": 3
+    }
+  },
+  "recommendation_receipt": {
+    "recommendation": {
+      "available_modes": [
+        "inline",
+        "batch-inline",
+        "sdd"
+      ],
+      "recommendation": {
+        "mode": "inline",
+        "reasons": [
+          "Native inline execution is the default. Choose SDD only when independently scoped delegation justifies its context and review overhead; task and wave counts alone do not justify it."
+        ]
+      },
+      "facts": {
+        "workflow": "full",
+        "documented_task_count": 10,
+        "planned_task_count": 10,
+        "planned_wave_count": 1,
+        "has_parallel_wave": false,
+        "inline_threshold": 3
+      }
+    },
+    "waves": [
+      {
+        "id": "implementation",
+        "strategy": "serial",
+        "tasks": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10"
+        ],
+        "depends_on": []
+      }
+    ],
+    "artifacts_hash": "sha256:53cf996560120a917976025d6906e3ecac63ea801c47dc1e46c88ad5d07b08dc",
+    "contract_hash": null,
+    "workflow": "full",
+    "execution_plan_revision_at_recommendation": 1,
+    "created_at": "2026-10-27T15:24:43.921Z",
+    "hash": "sha256:26e3d74ae1b5706211fb770e6010f49acc743542e2782e9e1971e17b23ea89c4"
+  },
+  "selection": {
+    "confirmed": true,
+    "followed_recommendation": true,
+    "acknowledged_non_recommendation": false
+  },
+  "hash": "sha256:ab5ecaafaed797d8e48928f6702758e1c8676568dee95c22b6044b68522643a7"
 }

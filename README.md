@@ -44,7 +44,7 @@ cd backend && .venv/Scripts/python -m pytest -q
 ## 目录
 
 ```
-backend/    FastAPI + SQLAlchemy + Alembic（app/ 源码，tests/ 18 项测试）
+backend/    FastAPI + SQLAlchemy + Alembic（app/ 源码，tests/ 34 项测试）
 frontend/   Vue 3 + Vite（登录/岗位/简历/设置/管理五页）
 doc/        调研方案（v2 终稿）与 spec-superflow 变更工件
 changes/    spec-superflow 工作流状态（phase0-platform-skeleton）
