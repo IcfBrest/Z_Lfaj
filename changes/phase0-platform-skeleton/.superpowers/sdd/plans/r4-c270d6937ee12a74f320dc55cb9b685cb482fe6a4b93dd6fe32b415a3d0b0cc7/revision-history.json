@@ -1,0 +1,6 @@
+{
+  "previous_plan_hash": "sha256:6eaf89b3e187a7229f18faa12f1957cc41f9621cf00f0d93487dd18795805a1e",
+  "previous_revision": 3,
+  "reason": "绑定新登记的 legacy 执行合同哈希（非语义修正，计划内容不变）",
+  "evidence": "scope changed: passing evidence invalidated; failures retained"
+}

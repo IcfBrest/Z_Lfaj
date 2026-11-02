@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "base": "2edd65358571d0b8de24fd7ce3cb1338b106fdaf",
+  "head": "e873d41f2665125a61daafd4e9c3cd165672ac15",
+  "report": ".superpowers\\sdd\\reviews\\snapshots\\ea542532-c28e-4999-9cfc-eb2eb6af23e1.md",
+  "report_sha256": "sha256:ad435621b5bf364e24a09222d5dad823215102261ef102a3cf5aba3aeb28d206",
+  "plan_hash": "sha256:6eaf89b3e187a7229f18faa12f1957cc41f9621cf00f0d93487dd18795805a1e",
+  "plan_revision": 3,
+  "recorded_at": "2026-11-02T14:51:34.063Z"
+}

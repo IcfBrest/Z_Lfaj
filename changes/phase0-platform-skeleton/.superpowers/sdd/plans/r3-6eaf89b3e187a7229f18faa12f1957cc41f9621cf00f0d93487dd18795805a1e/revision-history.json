@@ -1,0 +1,6 @@
+{
+  "previous_plan_hash": "sha256:ab5ecaafaed797d8e48928f6702758e1c8676568dee95c22b6044b68522643a7",
+  "previous_revision": 2,
+  "reason": "重建为 2.0.1 紧凑计划格式以完成 Phase 0 收尾，波次与既有实现/评审完全一致",
+  "evidence": "mode-only: applicable evidence preserved"
+}

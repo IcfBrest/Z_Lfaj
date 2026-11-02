@@ -2,31 +2,31 @@
 # Progress and legacy approvals. Recover missing evidence; never infer approval from artifact existence.
 
 # === Core state ===
-state: approved-for-build
+state: closing
 workflow: full
 workflow_variant: planned
-completion_outcome: null
+completion_outcome: verified
 completion_reason: null
-revision: 2
+revision: 4
 
 # === Hashes (fast staleness detection) ===
 artifacts_hash: sha256:53cf996560120a917976025d6906e3ecac63ea801c47dc1e46c88ad5d07b08dc
-contract_hash: null
+contract_hash: sha256:8066b4f897f7ea120667424c21f3dbfeebe4343e7d057fbf36a6ba8991fc5c2c
 
 # === Execution progress ===
 execution_mode: inline
-execution_plan_hash: sha256:ab5ecaafaed797d8e48928f6702758e1c8676568dee95c22b6044b68522643a7
-execution_plan_revision: 2
+execution_plan_hash: sha256:c270d6937ee12a74f320dc55cb9b685cb482fe6a4b93dd6fe32b415a3d0b0cc7
+execution_plan_revision: 4
 batches_completed: 0
-test_result: null
+test_result: pass: cd backend && .venv\Scripts\python.exe -m pytest -q
 spec_merged: true
 spec_publication_receipt: eyJ2ZXJzaW9uIjoxLCJzb3VyY2VfaGFzaCI6InNoYTI1Njo5NTVlYmYxOTFiYjVmZjFmZTYzMmViZWUyNDY5NDY4ODQ1YzNkMzI4NzhjYjk3OTdkODY0NWNkOTdkZWViOGZhIiwiYmFzZWxpbmVfYmVmb3JlX2hhc2giOiJzaGEyNTY6MGI2NzdkYTMwNmIxY2QyMDBlYjYzYTdlYmQ5MTk4YTA5YTI2MTU1MWQ5ZGRlZTc4YjhlODg5YmIxMDFjODc1MCIsImJhc2VsaW5lX2FmdGVyX2hhc2giOiJzaGEyNTY6ZmE5NGE2YzQxNWNjZTcyZWM5MmQwNzA5ZmQ2N2NjNjI4ODlkN2JiZTU4MzQ0ZGY4NmE0ZGY3MDIyYmJkMDU4NyIsImNhcGFiaWxpdGllcyI6WyJwbGF0Zm9ybS1jb3JlIl19
 
 # === Metadata ===
 change_name: phase0-platform-skeleton
-last_transition: 2026-10-27T15:16:06.730Z
-last_transition_from: bridging
-last_transition_to: approved-for-build
+last_transition: 2026-11-02T14:55:30.787Z
+last_transition_from: approved-for-build
+last_transition_to: executing
 
 # === Decision points ===
 dp_0_result: null
@@ -45,8 +45,8 @@ dp_3_result: pass
 dp_3_timestamp: 2026-10-27T15:16:06.171Z
 dp_3_decisions: null
 dp_3_confirmed: null
-dp_4_result: inline: plan revision 2; user-confirmed-revision; 补记 DP-4：计划内容与已执行波次完全一致（inline/final/单串行波次），仅补齐决策点记录
-dp_4_timestamp: 2026-10-27T15:24:44.365Z
+dp_4_result: inline: plan revision 4; user-confirmed-revision; 绑定新登记的 legacy 执行合同哈希（非语义修正，计划内容不变）
+dp_4_timestamp: 2026-11-02T14:54:15.323Z
 dp_4_decisions: null
 dp_4_confirmed: null
 dp_5_result: null
