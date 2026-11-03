@@ -1,7 +1,7 @@
 {
   "mode": "inline",
   "source": "approved-plan",
-  "rationale": "用户确认 Phase 1 范围：手动打分、共享与私有岗位都参与、四维权重默认均等可调",
+  "rationale": "执行期勾选 tasks.md 完成项并补充执行记录（不改变范围），重新对齐 artifacts hash",
   "waves": [
     {
       "id": "implementation",
@@ -19,11 +19,11 @@
       "depends_on": []
     }
   ],
-  "artifacts_hash": "sha256:b92ba617d9e2a2f4330213df7ba9fa8d9d5a3af34221db6e307c03cedd0a1cf7",
+  "artifacts_hash": "sha256:811bf11ca4af2f65d855b1a2fe2723b7bb0921eb54010759a965031b7d2a70dc",
   "contract_hash": null,
   "workflow": "full",
-  "revision": 1,
+  "revision": 2,
   "schema_version": 2,
   "review_policy": "final",
-  "hash": "sha256:fd2046244816867b2825b377b5de46de62fc2fd0c41d74ae6b761770fcdf8e01"
+  "hash": "sha256:52a72fbaf7b13d5d80fdf15fdd635f7a7e392b01a64f911fea0dc0721b92a381"
 }

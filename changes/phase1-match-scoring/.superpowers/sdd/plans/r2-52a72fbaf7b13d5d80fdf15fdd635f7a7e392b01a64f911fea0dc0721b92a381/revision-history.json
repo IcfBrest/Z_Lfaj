@@ -1,0 +1,6 @@
+{
+  "previous_plan_hash": "sha256:fd2046244816867b2825b377b5de46de62fc2fd0c41d74ae6b761770fcdf8e01",
+  "previous_revision": 1,
+  "reason": "执行期勾选 tasks.md 完成项并补充执行记录（不改变范围），重新对齐 artifacts hash",
+  "evidence": "scope changed: passing evidence invalidated; failures retained"
+}

@@ -10,7 +10,7 @@ completion_reason: null
 revision: null
 
 # === Hashes (fast staleness detection) ===
-artifacts_hash: sha256:b92ba617d9e2a2f4330213df7ba9fa8d9d5a3af34221db6e307c03cedd0a1cf7
+artifacts_hash: sha256:811bf11ca4af2f65d855b1a2fe2723b7bb0921eb54010759a965031b7d2a70dc
 contract_hash: null
 
 # === Execution progress ===
@@ -18,13 +18,13 @@ execution_mode: null
 execution_plan_hash: null
 execution_plan_revision: null
 batches_completed: 0
-test_result: null
-spec_merged: false
-spec_publication_receipt: null
+test_result: pass: cd backend && .venv\Scripts\python.exe -m pytest -q
+spec_merged: true
+spec_publication_receipt: eyJ2ZXJzaW9uIjoxLCJzb3VyY2VfaGFzaCI6InNoYTI1NjpkODg5YWJiNTkwZGY3MmRkNzgxZDkyYTA3MjYyNTZjNWRiNmRlY2JkYzVmY2VjY2VmMTI3YmFiZDQ1NDViZDVlIiwiYmFzZWxpbmVfYmVmb3JlX2hhc2giOiJzaGEyNTY6ZDkxOGE4N2MyODdhYWYzYTg2ZmMxZTJkOWU3ZmE4MTY5MTRkMThjMTA4YzViNDQ2YWJiYWE5NzU4MjU0MGZlZiIsImJhc2VsaW5lX2FmdGVyX2hhc2giOiJzaGEyNTY6MDdhMzQ5NDFkNWMxZTEzZTg0MTliNzgzMDIwMmFmOGI5M2U0ZGI4ZWRjYzhjOWUxNjQ0YTc4YzM0NTZhYTNmNyIsImNhcGFiaWxpdGllcyI6WyJwbGF0Zm9ybS1jb3JlIl19
 
 # === Metadata ===
 change_name: phase1-match-scoring
-last_transition: 2026-11-03T05:56:46.046Z
+last_transition: 2026-11-03T15:48:51.066Z
 last_transition_from: null
 last_transition_to: null
 
