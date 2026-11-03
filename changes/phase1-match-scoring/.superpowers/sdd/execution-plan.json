@@ -1,0 +1,29 @@
+{
+  "mode": "inline",
+  "source": "approved-plan",
+  "rationale": "用户确认 Phase 1 范围：手动打分、共享与私有岗位都参与、四维权重默认均等可调",
+  "waves": [
+    {
+      "id": "implementation",
+      "strategy": "serial",
+      "tasks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:b92ba617d9e2a2f4330213df7ba9fa8d9d5a3af34221db6e307c03cedd0a1cf7",
+  "contract_hash": null,
+  "workflow": "full",
+  "revision": 1,
+  "schema_version": 2,
+  "review_policy": "final",
+  "hash": "sha256:fd2046244816867b2825b377b5de46de62fc2fd0c41d74ae6b761770fcdf8e01"
+}

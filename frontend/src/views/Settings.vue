@@ -7,6 +7,10 @@ const costs = ref([])
 const form = ref({ name: '', base_url: '', api_key: '', default_model: '', task_models: {} })
 const message = ref('')
 const editingId = ref(null)
+const weights = ref({})
+const dimensions = ref([])
+const weightMessage = ref('')
+const rescoring = ref(false)
 
 const PRESETS = [
   { name: 'deepseek', base_url: 'https://api.deepseek.com/v1', default_model: 'deepseek-chat' },
@@ -18,6 +22,53 @@ const PRESETS = [
 async function refresh() {
   providers.value = await api.get('/providers')
   costs.value = await api.get('/costs/summary')
+  const current = await api.get('/matches/weights/current')
+  dimensions.value = current.dimensions
+  weights.value = { ...current.weights }
+}
+
+async function saveWeights() {
+  weightMessage.value = ''
+  const total = dimensions.value.reduce((sum, d) => sum + Number(weights.value[d] || 0), 0)
+  if (total <= 0) {
+    weightMessage.value = '四维权重不能全为 0'
+    return
+  }
+  const body = {}
+  for (const d of dimensions.value) body[d] = Number(weights.value[d] || 0)
+  try {
+    const saved = await api.put('/matches/weights', body)
+    weights.value = { ...saved.weights }
+    weightMessage.value = '已保存（新旧分数需要重算才会更新）'
+  } catch (e) {
+    weightMessage.value = e.message
+  }
+}
+
+async function rescore() {
+  if (rescoring.value) return
+  rescoring.value = true
+  weightMessage.value = '已提交重算…'
+  try {
+    const resp = await api.post('/matches/run', { force: true })
+    for (;;) {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const task = await api.get(`/tasks/${resp.task_id}`)
+      if (task.status === 'done') {
+        const result = task.result || {}
+        weightMessage.value = `重算完成：更新 ${result.scored || 0} 个，缓存 ${result.cached || 0} 个`
+        break
+      }
+      if (task.status === 'failed') {
+        weightMessage.value = `重算失败：${task.error}`
+        break
+      }
+    }
+  } catch (e) {
+    weightMessage.value = e.message
+  } finally {
+    rescoring.value = false
+  }
 }
 
 function applyPreset(p) {
@@ -112,6 +163,22 @@ onMounted(refresh)
         <tr v-if="providers.length === 0"><td colspan="5" class="muted">未配置，将使用平台默认模型</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="card">
+    <h3>匹配打分权重（四维，默认均等）</h3>
+    <div class="row" v-for="d in dimensions" :key="d" style="margin-bottom: 6px">
+      <label style="width: 140px; margin: 0">{{ d }}</label>
+      <input v-model.number="weights[d]" type="number" min="0" max="100" style="width: 120px" />
+    </div>
+    <p class="muted">总分 = Σ(维度分 × 权重) / Σ权重；改完权重后可一键重算全部已打分岗位。</p>
+    <div class="row" style="margin-top: 12px">
+      <button @click="saveWeights">保存权重</button>
+      <button class="secondary" :disabled="rescoring" @click="rescore">
+        {{ rescoring ? '重算中…' : '按当前权重重算' }}
+      </button>
+      <span class="muted">{{ weightMessage }}</span>
+    </div>
   </div>
 
   <div class="card">

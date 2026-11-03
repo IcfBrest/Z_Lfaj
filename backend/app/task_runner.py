@@ -21,11 +21,18 @@ def enqueue(
     runner: Callable[[str, sessionmaker], None],
     ref_type: str | None = None,
     ref_id: int | None = None,
+    params: dict | None = None,
 ) -> str:
     task_id = str(uuid.uuid4())
     db.add(
         BackgroundTask(
-            id=task_id, kind=kind, status="pending", user_id=user_id, ref_type=ref_type, ref_id=ref_id
+            id=task_id,
+            kind=kind,
+            status="pending",
+            user_id=user_id,
+            ref_type=ref_type,
+            ref_id=ref_id,
+            params=params or {},
         )
     )
     db.commit()

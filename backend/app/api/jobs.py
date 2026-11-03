@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session, sessionmaker
 
 from ..db import get_db
-from ..models import Company, JobPosting, User, UserManualJob, utcnow
+from ..models import Company, JobPosting, MatchResult, User, UserManualJob, utcnow
 from ..parsers import parse_jd
 from ..task_runner import enqueue, run_with_status
 from .deps import get_current_user
@@ -125,9 +125,39 @@ def _job_dict(job: JobPosting, company_name: str | None = None) -> dict:
     }
 
 
+def _match_map(db: Session, user: User, ref_type: str, ids: list[int]) -> dict[int, dict]:
+    """当前用户在这些岗位上的最新一条打分（没有则不计入结果）。"""
+    if not ids:
+        return {}
+    rows = (
+        db.query(MatchResult)
+        .filter(
+            MatchResult.user_id == user.id,
+            MatchResult.job_ref_type == ref_type,
+            MatchResult.job_ref_id.in_(ids),
+        )
+        .order_by(MatchResult.id.desc())
+        .all()
+    )
+    latest: dict[int, dict] = {}
+    for row in rows:
+        latest.setdefault(row.job_ref_id, {"match_id": row.id, "match_score": row.score})
+    return latest
+
+
+def _decorate(items: list[dict], scores: dict[int, dict], sort: str | None) -> list[dict]:
+    for item in items:
+        item.update(scores.get(item["id"], {"match_id": None, "match_score": None}))
+    if sort == "score":
+        # 已打分的按分数降序在前，未打分的保持原顺序在后
+        items.sort(key=lambda item: (item["match_score"] is None, -(item["match_score"] or 0)))
+    return items
+
+
 @router.get("/shared")
 def list_shared_jobs(
     company_id: int | None = None,
+    sort: str | None = None,
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> list[dict]:
@@ -135,7 +165,9 @@ def list_shared_jobs(
     if company_id is not None:
         query = query.filter(JobPosting.company_id == company_id)
     query = query.filter(JobPosting.is_active.is_(True))
-    return [_job_dict(job, name) for job, name in query.order_by(JobPosting.id.desc()).limit(500).all()]
+    items = [_job_dict(job, name) for job, name in query.order_by(JobPosting.id.desc()).limit(500).all()]
+    scores = _match_map(db, user, "job_posting", [item["id"] for item in items])
+    return _decorate(items, scores, sort)
 
 
 @router.get("/shared/{job_id}")
@@ -155,7 +187,11 @@ def get_shared_job(job_id: int, db: Session = Depends(get_db), user: User = Depe
 
 
 @router.get("/mine")
-def list_my_jobs(db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> list[dict]:
+def list_my_jobs(
+    sort: str | None = None,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> list[dict]:
     jobs = (
         db.query(UserManualJob)
         .filter_by(user_id=user.id)
@@ -168,7 +204,8 @@ def list_my_jobs(db: Session = Depends(get_db), user: User = Depends(get_current
         d = _job_dict(job, job.company_name)
         d.pop("scraped_at", None)
         out.append(d)
-    return out
+    scores = _match_map(db, user, "user_manual_job", [item["id"] for item in out])
+    return _decorate(out, scores, sort)
 
 
 @router.get("/mine/{job_id}")

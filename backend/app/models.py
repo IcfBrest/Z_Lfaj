@@ -20,6 +20,8 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_disabled: Mapped[bool] = mapped_column(Boolean, default=False)
     invited_by_code: Mapped[str | None] = mapped_column(String(32), nullable=True)
+    # 四维打分权重：{"技能匹配": 25, ...}；空表示均等
+    score_weights: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     providers: Mapped[list["UserProvider"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -148,6 +150,8 @@ class BackgroundTask(Base):
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     ref_type: Mapped[str | None] = mapped_column(String(32), nullable=True)  # job_posting|user_manual_job|resume
     ref_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # 任务参数（如打分任务的 limit/force），重试时原样复用
+    params: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

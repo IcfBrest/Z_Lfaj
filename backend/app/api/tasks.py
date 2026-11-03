@@ -5,6 +5,7 @@ from ..db import get_db
 from ..models import BackgroundTask, User, utcnow
 from .deps import get_current_user
 from .jobs import run_job_parse
+from .matches import run_match_job, run_match_run
 from .resumes import run_resume_parse
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
@@ -22,6 +23,7 @@ def get_task(task_id: str, db: Session = Depends(get_db), user: User = Depends(g
         "ref_type": task.ref_type,
         "ref_id": task.ref_id,
         "error": task.error,
+        "result": (task.params or {}).get("result"),
         "created_at": task.created_at.isoformat(),
     }
 
@@ -39,7 +41,12 @@ def retry_task(
     if task.status not in ("failed",):
         raise HTTPException(400, "只有失败的任务可以重试")
 
-    runner = {"job_parse": run_job_parse, "resume_parse": run_resume_parse}.get(task.kind)
+    runner = {
+        "job_parse": run_job_parse,
+        "resume_parse": run_resume_parse,
+        "match_run": run_match_run,
+        "match_job": run_match_job,
+    }.get(task.kind)
     if runner is None:
         raise HTTPException(400, f"不支持重试的任务类型：{task.kind}")
 

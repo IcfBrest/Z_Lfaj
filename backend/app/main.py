@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import admin, auth, companies, costs, jobs, providers, resumes, tasks
+from .api import admin, auth, companies, costs, jobs, matches, providers, resumes, tasks
 from .config import get_settings
 
 
@@ -21,6 +21,7 @@ def create_app() -> FastAPI:
     app.include_router(companies.router)
     app.include_router(jobs.router)
     app.include_router(resumes.router)
+    app.include_router(matches.router)
     app.include_router(tasks.router)
     app.include_router(costs.router)
 

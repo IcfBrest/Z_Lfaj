@@ -2,7 +2,7 @@
 
 多用户 AI 求职工作台：公司官网岗位采集（规划中）→ 岗位库 → 简历结构化 → 人岗匹配打分 → 简历修改建议。
 
-当前进度：**Phase 0 完成**（骨架 + 多用户 + 多模型 + 手动导入）。路线图与全部设计决策见 [doc/求职平台调研方案.md](doc/求职平台调研方案.md)。
+当前进度：**Phase 1 完成**（骨架 + 多用户 + 多模型 + 手动导入 + 人岗匹配打分）。下一步是 Phase 2 简历修改建议。路线图与全部设计决策见 [doc/求职平台调研方案.md](doc/求职平台调研方案.md)。
 
 ## 本机开发
 
@@ -33,6 +33,8 @@ cd backend && .venv/Scripts/python -m pytest -q
 3. 每人在「设置」页配置自己的模型 Provider（DeepSeek/Kimi/GLM/Qwen 等 OpenAI 兼容接口，Key 加密存储、仅显示掩码）。
 4. 「岗位」页粘贴 JD → 后台解析入库（管理员可选入共享库，普通用户为私有岗位）。
 5. 「简历」页上传 PDF/DOCX/MD → 本地抽取 + LLM 结构化；**脱敏默认开启**（姓名/手机号/邮箱出站前替换为占位符，原文加密存储）。
+6. 「岗位」页点「给当前简历批量打分」：先硬规则过滤（经验差 >2 年、学历不够，附排除理由），再按关键词粗排取前 20，最后 LLM 四维打分 + 代码加权；列表显示推荐分并可查看维度分/理由/缺口。单岗也可单独打分，结果按 (简历版本, 岗位) 缓存。
+7. 「设置」页调整四维权重（技能匹配/经验相关度/职级与薪资匹配/行业业务匹配），保存后可按新权重重算全部分数。
 
 ## 安全基线
 
@@ -44,8 +46,8 @@ cd backend && .venv/Scripts/python -m pytest -q
 ## 目录
 
 ```
-backend/    FastAPI + SQLAlchemy + Alembic（app/ 源码，tests/ 34 项测试）
+backend/    FastAPI + SQLAlchemy + Alembic（app/ 源码，tests/ 55 项测试，tools/ 本机联调冒烟脚本）
 frontend/   Vue 3 + Vite（登录/岗位/简历/设置/管理五页）
 doc/        调研方案（v2 终稿）与 spec-superflow 变更工件
-changes/    spec-superflow 工作流状态（phase0-platform-skeleton）
+changes/    spec-superflow 工作流状态（phase0 已收尾，phase1-match-scoring 进行中）
 ```

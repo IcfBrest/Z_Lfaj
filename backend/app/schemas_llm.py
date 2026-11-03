@@ -67,3 +67,14 @@ class ResumeProfile(BaseModel):
     skills: list[str] = Field(default_factory=list)
     certificates: list[str] = Field(default_factory=list)
     self_summary: str | None = None
+
+
+class MatchScore(BaseModel):
+    """人岗精排输出（调研方案 4.4）。总分由代码加权，模型只给维度分。"""
+
+    dimension_scores: dict[str, int] = Field(default_factory=dict)
+    verdict: str = ""
+    reasons: str = ""
+    matching_points: list[str] = Field(default_factory=list)
+    gaps: list[str] = Field(default_factory=list)
+    score_basis: str = ""
