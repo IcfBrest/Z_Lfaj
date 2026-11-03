@@ -2,10 +2,10 @@
 # Progress and legacy approvals. Recover missing evidence; never infer approval from artifact existence.
 
 # === Core state ===
-state: executing
+state: closing
 workflow: full
 workflow_variant: planned
-completion_outcome: null
+completion_outcome: verified
 completion_reason: null
 revision: null
 
@@ -24,7 +24,7 @@ spec_publication_receipt: eyJ2ZXJzaW9uIjoxLCJzb3VyY2VfaGFzaCI6InNoYTI1NjpkODg5YW
 
 # === Metadata ===
 change_name: phase1-match-scoring
-last_transition: 2026-11-03T15:48:51.066Z
+last_transition: 2026-11-03T15:50:10.217Z
 last_transition_from: null
 last_transition_to: null
 
