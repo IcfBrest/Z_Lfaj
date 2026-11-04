@@ -1,7 +1,7 @@
 {
   "mode": "inline",
   "source": "approved-plan",
-  "rationale": "用户 2026-11-04 指令“继续”，并已在范围提问中确认按“单岗位生成建议”执行 Phase 2",
+  "rationale": "执行期勾选 tasks.md 完成项并补充执行记录（不改变范围），重新对齐 artifacts hash",
   "waves": [
     {
       "id": "implementation",
@@ -17,11 +17,11 @@
       "depends_on": []
     }
   ],
-  "artifacts_hash": "sha256:819116ace6f64fc84f5477f1d10886d2fcb77e891e43af436bfcbff56bd59974",
+  "artifacts_hash": "sha256:99eb6fefd783150746cdd51980c72b82e9035a4a1667af06f8a2b62d0f622dfe",
   "contract_hash": null,
   "workflow": "full",
-  "revision": 1,
+  "revision": 2,
   "schema_version": 2,
   "review_policy": "final",
-  "hash": "sha256:7952934cec260a231ffd125b64223ff50f1ad9d4376f55f394556bdf37cb0970"
+  "hash": "sha256:b3b97f13c0215f242b673f32f7fac5da11476d055620613bbb14755dacb59d21"
 }
