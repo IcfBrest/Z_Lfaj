@@ -175,13 +175,16 @@ class LlmCall(Base):
 
 
 class Suggestion(Base):
-    """预留：Phase 2 修改建议。Phase 0 仅建表。"""
+    """Phase 2：针对某次匹配结果生成的简历修改建议（一条 match 一条建议，可 force 覆盖）。"""
 
     __tablename__ = "suggestions"
+    __table_args__ = (UniqueConstraint("user_id", "match_result_id", "resume_version"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     resume_id: Mapped[int] = mapped_column(ForeignKey("resumes.id"))
+    match_result_id: Mapped[int | None] = mapped_column(ForeignKey("match_results.id"), nullable=True, index=True)
+    resume_version: Mapped[int] = mapped_column(Integer, default=1)
     job_ref_type: Mapped[str] = mapped_column(String(32))
     job_ref_id: Mapped[int] = mapped_column(Integer)
     payload_json: Mapped[dict] = mapped_column(JSON)

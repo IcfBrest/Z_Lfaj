@@ -15,6 +15,9 @@ BASE = "http://127.0.0.1:8098"
 DB = "data/smoke-e2e.db"
 EXPECTED_SCORE = 65  # (80+70+60+50)/4
 
+# Windows 上 urllib 会读取注册表里的系统代理，本机回环请求必须绕过，否则会拿到 502
+_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 PROFILE = {
     "basic_info": {"name": "张三", "location": "上海", "years_of_experience": 3},
     "education": [{"school": "某大学", "degree": "本科", "major": "计算机"}],
@@ -33,7 +36,7 @@ def call(method, path, body=None, token=None):
     if token:
         request.add_header("Authorization", f"Bearer {token}")
     try:
-        with urllib.request.urlopen(request, timeout=60) as resp:
+        with _OPENER.open(request, timeout=60) as resp:
             raw = resp.read().decode()
             return resp.status, (json.loads(raw) if raw else None)
     except urllib.error.HTTPError as exc:
@@ -150,6 +153,34 @@ def main() -> int:
     status, matches = call("GET", "/api/matches", token=token)
     print(f"[{'ok' if matches[0]['score'] == 80 else 'fail'}] force rescore with new weights score={matches[0]['score']}")
     assert matches[0]["score"] == 80, matches[0]
+
+    # ---- Phase 2：按岗位生成修改建议（同一桩服务，靠提示词区分任务） ----
+    target = matches[0]
+    status, gen = call("POST", "/api/suggestions", {"match_id": target["id"]}, token=token)
+    print(f"[{'ok' if status == 202 else 'fail'}] suggestion run {status} {gen}")
+    assert status == 202, gen
+    task = wait_task(gen["task_id"], token)
+    result = task.get("result") or {}
+    print(f"[info] suggestion task {task['status']} result={json.dumps(result, ensure_ascii=False)}")
+    assert task["status"] == "done", task
+    assert result.get("count") == 3, result
+
+    status, items = call("GET", f"/api/suggestions?match_id={target['id']}", token=token)
+    assert status == 200 and len(items) == 1, items
+    item = items[0]
+    assert item["suggestions"][0]["section_label"] == "工作经历", item["suggestions"][0]
+    assert item["missing_keywords"] == ["Kafka", "Kubernetes"], item["missing_keywords"]
+    joined = " ".join(item["honesty_warnings"])
+    print(f"[{'ok' if '原文未能在简历中定位' in joined else 'fail'}] honesty_warnings={json.dumps(item['honesty_warnings'], ensure_ascii=False)}")
+    assert "原文未能在简历中定位" in joined, item["honesty_warnings"]
+
+    status, again = call("POST", "/api/suggestions", {"match_id": target["id"]}, token=token)
+    task2 = wait_task(again["task_id"], token)
+    assert task2["result"]["suggestion_id"] == result["suggestion_id"], (task2, result)
+    status, costs = call("GET", "/api/costs/summary", token=token)
+    suggest_calls = [c for c in costs if c["task_type"] == "suggest"]
+    print(f"[{'ok' if suggest_calls and suggest_calls[0]['calls'] == 1 else 'fail'}] suggest calls={json.dumps(suggest_calls, ensure_ascii=False)}")
+    assert suggest_calls and suggest_calls[0]["calls"] == 1, costs
 
     print("\nSMOKE OK")
     return 0

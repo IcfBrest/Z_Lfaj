@@ -17,6 +17,9 @@ const parseMessage = ref('')
 const scoreMessage = ref('')
 const detail = ref(null)
 const detailLoading = ref(false)
+const suggestion = ref(null)
+const suggestTask = ref(null)
+const suggestMessage = ref('')
 let timer = null
 
 const jobs = computed(() => (tab.value === 'shared' ? sharedJobs.value : myJobs.value))
@@ -70,6 +73,58 @@ async function poll() {
       /* 下轮重试 */
     }
   }
+  if (suggestTask.value) {
+    try {
+      const t = await api.get(`/tasks/${suggestTask.value}`)
+      if (t.status === 'done') {
+        const r = t.result || {}
+        suggestMessage.value =
+          `已生成 ${r.count || 0} 条建议` +
+          (r.missing_keywords ? `｜缺失关键词 ${r.missing_keywords} 个` : '') +
+          (r.honesty_warnings ? `｜防编造提醒 ${r.honesty_warnings} 条` : '')
+        suggestTask.value = null
+        await loadSuggestion()
+      } else if (t.status === 'failed') {
+        suggestMessage.value = `生成失败：${t.error}`
+        suggestTask.value = null
+      }
+    } catch {
+      /* 下轮重试 */
+    }
+  }
+}
+
+async function loadSuggestion() {
+  if (!detail.value) return
+  try {
+    const items = await api.get(`/suggestions?match_id=${detail.value.id}`)
+    suggestion.value = items.length ? items[0] : null
+  } catch (e) {
+    suggestMessage.value = e.message
+  }
+}
+
+async function generateSuggestion(force) {
+  if (!detail.value) return
+  suggestMessage.value = force ? '正在按新结论重新生成建议…' : '正在生成修改建议…'
+  try {
+    const resp = await api.post('/suggestions', { match_id: detail.value.id, force: !!force })
+    suggestTask.value = resp.task_id
+  } catch (e) {
+    suggestMessage.value = e.message
+  }
+}
+
+function priorityClass(priority) {
+  if (priority === 'high') return 'red'
+  if (priority === 'low') return 'gray'
+  return 'green'
+}
+
+function priorityLabel(priority) {
+  if (priority === 'high') return '高优先级'
+  if (priority === 'low') return '低优先级'
+  return '中优先级'
 }
 
 async function importJd() {
@@ -111,8 +166,11 @@ async function scoreOne(job) {
 async function openDetail(job) {
   if (!job.match_id) return
   detailLoading.value = true
+  suggestion.value = null
+  suggestMessage.value = ''
   try {
     detail.value = await api.get(`/matches/${job.match_id}`)
+    await loadSuggestion()
   } catch (e) {
     scoreMessage.value = e.message
   } finally {
@@ -199,7 +257,7 @@ onUnmounted(() => clearInterval(timer))
   <div class="card" v-if="detailLoading || detail">
     <div class="row" style="margin-bottom: 8px">
       <h3 style="margin: 0">匹配详情</h3>
-      <button class="secondary" @click="detail = null">关闭</button>
+      <button class="secondary" @click="detail = null; suggestion = null; suggestMessage = ''">关闭</button>
     </div>
     <template v-if="detail">
       <div class="row" style="margin-bottom: 8px">
@@ -237,6 +295,45 @@ onUnmounted(() => clearInterval(timer))
       <p class="muted" v-if="(detail.missing_dimensions || []).length">
         模型未给出的维度：{{ detail.missing_dimensions.join('、') }}（按 0 分计）
       </p>
+
+      <div class="row" style="margin: 12px 0 8px">
+        <button :disabled="suggestTask !== null" @click="generateSuggestion(false)">
+          {{ suggestTask ? '生成中…' : (suggestion ? '刷新建议' : '生成修改建议') }}
+        </button>
+        <button
+          v-if="suggestion"
+          class="secondary"
+          :disabled="suggestTask !== null"
+          @click="generateSuggestion(true)"
+        >
+          按新结论重新生成
+        </button>
+        <span class="muted">{{ suggestMessage }}</span>
+      </div>
+
+      <div v-if="suggestion">
+        <div class="warn-box" v-if="(suggestion.honesty_warnings || []).length">
+          <strong>防编造提醒</strong>
+          <ul>
+            <li v-for="w in suggestion.honesty_warnings" :key="w">{{ w }}</li>
+          </ul>
+        </div>
+        <div class="row" style="margin: 8px 0" v-if="(suggestion.missing_keywords || []).length">
+          <span class="muted">岗位要求但简历未体现：</span>
+          <span v-for="k in suggestion.missing_keywords" :key="k" class="tag gray">{{ k }}</span>
+        </div>
+        <div class="suggestion" v-for="(item, index) in suggestion.suggestions" :key="index">
+          <div class="row">
+            <span class="tag">{{ index + 1 }}</span>
+            <span class="tag gray">{{ item.section_label }} · {{ item.section }}</span>
+            <span class="tag">{{ item.action }}</span>
+            <span :class="['tag', priorityClass(item.priority)]">{{ priorityLabel(item.priority) }}</span>
+          </div>
+          <p class="muted" v-if="item.original">原文：{{ item.original }}</p>
+          <p class="proposed">改为：{{ item.proposed }}</p>
+          <p class="muted" v-if="item.why">理由：{{ item.why }}</p>
+        </div>
+      </div>
     </template>
     <p v-else class="muted">加载中…</p>
   </div>

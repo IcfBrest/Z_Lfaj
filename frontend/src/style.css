@@ -30,3 +30,9 @@ th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #f0f1f3; }
 .ok { color: #2ea933; font-size: 13px; margin-top: 8px; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .muted { color: #8f959e; font-size: 12px; }
+.warn-box { border: 1px solid #ffd6d3; background: #fff7f6; border-radius: 6px; padding: 10px 12px; margin: 8px 0; font-size: 13px; color: #b5322c; }
+.warn-box ul { margin: 6px 0 0; padding-left: 18px; }
+.warn-box li { margin-bottom: 2px; }
+.suggestion { border: 1px solid #e5e6eb; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; }
+.suggestion p { margin: 6px 0 0; font-size: 13px; }
+.suggestion .proposed { color: #1f2329; }

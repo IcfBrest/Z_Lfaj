@@ -2,7 +2,7 @@
 
 多用户 AI 求职工作台：公司官网岗位采集（规划中）→ 岗位库 → 简历结构化 → 人岗匹配打分 → 简历修改建议。
 
-当前进度：**Phase 1 完成**（骨架 + 多用户 + 多模型 + 手动导入 + 人岗匹配打分）。下一步是 Phase 2 简历修改建议。路线图与全部设计决策见 [doc/求职平台调研方案.md](doc/求职平台调研方案.md)。
+当前进度：**Phase 2 完成**（骨架 + 多用户 + 多模型 + 手动导入 + 人岗匹配打分 + 简历修改建议）。下一步是 Phase 3 岗位采集（米哈游 + 腾讯）。路线图与全部设计决策见 [doc/求职平台调研方案.md](doc/求职平台调研方案.md)。
 
 ## 本机开发
 
@@ -35,6 +35,7 @@ cd backend && .venv/Scripts/python -m pytest -q
 5. 「简历」页上传 PDF/DOCX/MD → 本地抽取 + LLM 结构化；**脱敏默认开启**（姓名/手机号/邮箱出站前替换为占位符，原文加密存储）。
 6. 「岗位」页点「给当前简历批量打分」：先硬规则过滤（经验差 >2 年、学历不够，附排除理由），再按关键词粗排取前 20，最后 LLM 四维打分 + 代码加权；列表显示推荐分并可查看维度分/理由/缺口。单岗也可单独打分，结果按 (简历版本, 岗位) 缓存。
 7. 「设置」页调整四维权重（技能匹配/经验相关度/职级与薪资匹配/行业业务匹配），保存后可按新权重重算全部分数。
+8. 在匹配详情里点「生成修改建议」：以该岗位的打分结论（维度分、gaps）为输入，产出逐条建议（定位字段 + 原文 → 改写 + 理由 + 优先级）、缺失关键词与防编造提醒；建议与匹配结果绑定缓存，结论不变时不重复调用模型，「按新结论重新生成」可强制重算。
 
 ## 安全基线
 
@@ -46,8 +47,12 @@ cd backend && .venv/Scripts/python -m pytest -q
 ## 目录
 
 ```
-backend/    FastAPI + SQLAlchemy + Alembic（app/ 源码，tests/ 55 项测试，tools/ 本机联调冒烟脚本）
+backend/    FastAPI + SQLAlchemy + Alembic（app/ 源码，tests/ 62 项测试，tools/ 本机联调冒烟脚本）
 frontend/   Vue 3 + Vite（登录/岗位/简历/设置/管理五页）
 doc/        调研方案（v2 终稿）与 spec-superflow 变更工件
-changes/    spec-superflow 工作流状态（phase0 已收尾，phase1-match-scoring 进行中）
+changes/    spec-superflow 工作流状态（phase0/phase1 已收尾，phase2-suggestions 进行中）
 ```
+
+## 本机冒烟
+
+无真实 Key 也能端到端验证：`cd backend && pwsh -File tools/smoke_run.ps1`（起本地桩模型 + uvicorn + sqlite，跑完自动清理）。

@@ -7,6 +7,7 @@ from .deps import get_current_user
 from .jobs import run_job_parse
 from .matches import run_match_job, run_match_run
 from .resumes import run_resume_parse
+from .suggestions import run_suggestion_generate
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
 
@@ -46,6 +47,7 @@ def retry_task(
         "resume_parse": run_resume_parse,
         "match_run": run_match_run,
         "match_job": run_match_job,
+        "suggestion_generate": run_suggestion_generate,
     }.get(task.kind)
     if runner is None:
         raise HTTPException(400, f"不支持重试的任务类型：{task.kind}")

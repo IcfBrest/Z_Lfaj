@@ -78,3 +78,22 @@ class MatchScore(BaseModel):
     matching_points: list[str] = Field(default_factory=list)
     gaps: list[str] = Field(default_factory=list)
     score_basis: str = ""
+
+
+class SuggestionItem(BaseModel):
+    """单条简历修改建议（调研方案 4.5）。`original` 必须是简历原文片段，否则会被校验追加警告。"""
+
+    section: str = ""
+    action: str = ""
+    original: str = ""
+    proposed: str = ""
+    why: str = ""
+    priority: str = "medium"
+
+
+class SuggestionPayload(BaseModel):
+    """建议整体输出：逐条建议 + 缺失关键词 + 防编造警告。"""
+
+    suggestions: list[SuggestionItem] = Field(default_factory=list)
+    missing_keywords: list[str] = Field(default_factory=list)
+    honesty_warnings: list[str] = Field(default_factory=list)

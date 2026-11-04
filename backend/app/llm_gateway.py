@@ -5,6 +5,8 @@
 """
 
 import json
+import os
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Callable
@@ -17,6 +19,34 @@ from .models import LlmCall, UserProvider, utcnow
 from .security import decrypt_text
 
 TASK_TYPES = ("parse", "score", "suggest")
+
+_PREPARE_LOCK = threading.Lock()
+_PREPARED = False
+
+
+def prepare() -> None:
+    """导入 litellm 并关掉会卡住进程的联网行为（幂等、异常不外抛）。
+
+    litellm 首次导入要 4~7 秒，默认还会去 GitHub 拉模型价目表（本机 10 秒超时后
+    才回落本地表），这段耗时若发生在请求线程里会把事件循环一起卡住——所以改由
+    应用启动时预热，并用 LITELLM_LOCAL_MODEL_COST_MAP 直接走内置价目表。
+    """
+    global _PREPARED
+    if _PREPARED:
+        return
+    os.environ.setdefault("LITELLM_LOCAL_MODEL_COST_MAP", "True")
+    os.environ.setdefault("LITELLM_LOG", "ERROR")
+    with _PREPARE_LOCK:
+        if _PREPARED:
+            return
+        try:
+            import litellm  # noqa: F401
+
+            litellm.suppress_debug_info = True
+        except Exception:  # noqa: BLE001 - 预热失败不影响后续按需导入
+            return
+        _PREPARED = True
+
 
 
 @dataclass
@@ -65,7 +95,8 @@ def _invoke(provider: UserProvider | None, model: str, messages: list[dict]) -> 
 
     独立成函数便于测试打桩。生产路径走 LiteLLM 的 OpenAI 兼容入口。
     """
-    from litellm import completion  # 延迟导入
+    prepare()
+    from litellm import completion  # 延迟导入（正常的预热路径见 prepare）
 
     kwargs: dict[str, Any] = {
         "model": model,
