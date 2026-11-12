@@ -107,6 +107,53 @@ TENCENT_DETAILS = {
 }
 
 
+BILIBILI_JOBS = [
+    {
+        "id": "31001",
+        "positionName": "后端开发工程师（直播）",
+        "positionDescription": "工作职责:\n1、负责直播服务端开发；\n2、参与架构演进。\n工作要求:\n1、本科及以上学历；\n2、熟悉 Go 与高并发。\n加分项\n有直播业务经验。",
+        "workLocation": "上海",
+        "postCodeName": "技术类",
+        "positionTypeName": "技术",
+        "recruitType": 0,
+    },
+    {
+        "id": "31002",
+        "positionName": "内容运营（番剧）",
+        "positionDescription": "工作职责:\n1、负责番剧内容排期。\n工作要求:\n1、有二次元内容运营经验。",
+        "workLocation": "上海",
+        "postCodeName": "运营类",
+        "positionTypeName": "运营",
+        "recruitType": 0,
+    },
+]
+
+MEITUAN_JOBS = [
+    {
+        "jobUnionId": "46001",
+        "name": "数据开发工程师（到店）",
+        "jobFamily": "数据",
+        "jobFamilyGroup": "数据/算法",
+        "cityList": [{"name": "北京市"}, {"name": "上海市"}],
+        "jobDuty": "岗位职责:\n1、负责实时数仓建设；\n2、支撑业务指标。",
+        "jobRequirement": "岗位要求:\n1、本科及以上；\n2、熟悉 Flink 与 Spark。",
+        "workYear": "3-5年",
+        "jobType": "1",
+    },
+    {
+        "jobUnionId": "46002",
+        "name": "算法工程师（推荐）",
+        "jobFamily": "算法",
+        "jobFamilyGroup": "数据/算法",
+        "cityList": [{"name": "北京市"}],
+        "jobDuty": "岗位职责:\n1、负责推荐排序模型迭代。",
+        "jobRequirement": "岗位要求:\n1、熟悉 PyTorch。",
+        "workYear": "不限",
+        "jobType": "1",
+    },
+]
+
+
 def _json(handler: BaseHTTPRequestHandler, payload: dict, status: int = 200) -> None:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     handler.send_response(status)
@@ -132,6 +179,8 @@ class Handler(BaseHTTPRequestHandler):
                 _json(self, {"Code": 404, "Message": "post not found"}, status=200)
                 return
             _json(self, {"Code": 200, "Data": TENCENT_DETAILS[post_id]})
+        elif parsed.path == "/bilibili/api/auth/v1/csrf/token":
+            _json(self, {"code": 0, "data": "csrf-stub-token"})
         else:
             _json(self, {"Code": 404, "Message": "unknown path"}, status=404)
 
@@ -152,6 +201,33 @@ class Handler(BaseHTTPRequestHandler):
                 _json(self, {"success": False, "message": "职位不存在", "code": 404})
                 return
             _json(self, {"success": True, "data": MIHOYO_DETAILS[job_id]})
+        elif self.path == "/bilibili/api/srs/position/positionList":
+            page = int(payload.get("pageNum") or 1)
+            items = BILIBILI_JOBS if page == 1 else []
+            _json(
+                self,
+                {
+                    "code": 0,
+                    "data": {"list": items, "pages": 1, "size": 50, "total": len(BILIBILI_JOBS)},
+                },
+            )
+        elif self.path == "/meituan/api/official/job/getJobList":
+            page = int((payload.get("page") or {}).get("pageNo") or 1)
+            items = MEITUAN_JOBS if page == 1 else []
+            _json(
+                self,
+                {
+                    "data": {
+                        "list": items,
+                        "page": {
+                            "pageNo": page,
+                            "pageSize": 50,
+                            "totalPage": 1,
+                            "totalCount": len(MEITUAN_JOBS),
+                        },
+                    }
+                },
+            )
         else:
             _json(self, {"success": False, "message": "unknown path"}, status=404)
 

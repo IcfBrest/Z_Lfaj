@@ -16,6 +16,8 @@ $env:no_proxy = '127.0.0.1,localhost'
 # 采集指向本地桩站点，并把限速间隔调小以缩短冒烟时间
 $env:MIHOYO_BASE_URL = 'http://127.0.0.1:8097/mihoyo'
 $env:TENCENT_BASE_URL = 'http://127.0.0.1:8097/tencent'
+$env:BILIBILI_BASE_URL = 'http://127.0.0.1:8097/bilibili'
+$env:MEITUAN_BASE_URL = 'http://127.0.0.1:8097/meituan'
 $env:SCRAPER_MIN_INTERVAL = '0.05'
 Remove-Item -Force -ErrorAction SilentlyContinue '.\data\smoke-e2e.db'
 

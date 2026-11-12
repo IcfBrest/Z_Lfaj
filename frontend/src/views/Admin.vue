@@ -161,7 +161,7 @@ onMounted(refresh)
         只抓列表，不抓详情
       </label>
     </div>
-    <p class="muted">采集是后台任务：先抓列表、再逐条抓详情，按外部 id 去重；整轮跑完后才把站点上已消失的岗位标为下架。</p>
+    <p class="muted">采集是后台任务：先抓列表、再逐条抓详情，按外部 id 去重；整轮跑完后才把站点上已消失的岗位标为下架。标「需浏览器」的站点会在服务端起无头 Edge 翻页采集，其余站点走纯 HTTP。</p>
     <table>
       <thead><tr><th>站点</th><th>在架 / 累计</th><th>最近同步</th><th>操作</th></tr></thead>
       <tbody>
@@ -169,6 +169,7 @@ onMounted(refresh)
           <td>
             <strong>{{ s.company }}</strong>
             <div class="muted">{{ s.source }}</div>
+            <div v-if="s.mode === 'browser'" class="muted">需浏览器</div>
           </td>
           <td>{{ s.active_jobs }} / {{ s.total_jobs }}</td>
           <td class="muted">{{ fmtTime(s.last_scraped_at) }}</td>

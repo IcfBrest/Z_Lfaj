@@ -1,0 +1,29 @@
+{
+  "mode": "inline",
+  "source": "approved-plan",
+  "rationale": "用户 m02052 指令\"开始\"进入 Phase 4：采集字节跳动/B站/美团三家站点",
+  "waves": [
+    {
+      "id": "implementation",
+      "strategy": "serial",
+      "tasks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:717f90df5548743c23b37ca9b871f6b01cfa97481ae0af3ba24482427022e9b7",
+  "contract_hash": null,
+  "workflow": "full",
+  "revision": 1,
+  "schema_version": 2,
+  "review_policy": "final",
+  "hash": "sha256:63fc6557fa4058d56f976634eea669c0ff06c874b9c5fc11e87f8d87b64e03e9"
+}

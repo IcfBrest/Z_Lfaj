@@ -73,6 +73,8 @@ def list_sources(
                 "active_jobs": active,
                 "total_jobs": total,
                 "last_scraped_at": last_scraped_at,
+                # 前端据此提示「需要浏览器」——浏览器驱动站点是唯一会在服务端起 Edge 的
+                "mode": "browser" if callable(getattr(source, "pages", None)) else "http",
             }
         )
     return result

@@ -185,8 +185,11 @@ def main() -> int:
     # ---- Phase 3：站点采集（本地桩站点，真实走 urllib + 限速 + 去重 + 下架） ----
     status, sources = call("GET", "/api/admin/scrape/sources", token=token)
     names = {s["source"] for s in sources or []}
-    print(f"[{'ok' if names == {'mihoyo', 'tencent'} else 'fail'}] scrape sources {names}")
-    assert status == 200 and names == {"mihoyo", "tencent"}, sources
+    expected = {"mihoyo", "tencent", "bytedance", "bilibili", "meituan"}
+    print(f"[{'ok' if names == expected else 'fail'}] scrape sources {names}")
+    assert status == 200 and names == expected, sources
+    modes = {s["source"]: s["mode"] for s in sources}
+    assert modes["bytedance"] == "browser" and modes["meituan"] == "http", modes
 
     status, run = call("POST", "/api/admin/scrape", {"source": "mihoyo"}, token=token)
     print(f"[{'ok' if status == 202 else 'fail'}] mihoyo scrape run {status} {run}")
@@ -247,6 +250,48 @@ def main() -> int:
     assert task["status"] == "done" and res.get("scored", 0) >= 5, res
     titles = {m["title"] for m in call("GET", "/api/matches", token=token)[1]}
     assert "服务端开发工程师（原神）" in titles, titles
+
+    # ---- Phase 4：B站（csrf + 明文 JSON）与美团（明文 JSON），字节需浏览器故冒烟跳过 ----
+    status, run = call("POST", "/api/admin/scrape", {"source": "bilibili"}, token=token)
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    print(f"[{'ok' if res.get('created') == 2 else 'fail'}] bilibili run {json.dumps(res, ensure_ascii=False)}")
+    assert task["status"] == "done" and (res["created"], res["failed"]) == (2, 0), res
+
+    jobs = call("GET", "/api/jobs/shared", token=token)[1]
+    bili = [j for j in jobs if j["source_type"] == "bilibili"]
+    first_bili = next(j for j in bili if "直播" in j["title"])
+    status, full = call("GET", f"/api/jobs/shared/{first_bili['id']}", token=token)
+    ok_bili = (
+        len(bili) == 2
+        and full.get("requirements")
+        and full.get("nice_to_have")
+        and full["source_url"].startswith("https://jobs.bilibili.com/social/positions/")
+    )
+    print(f"[{'ok' if ok_bili else 'fail'}] bilibili job resp={len(full.get('responsibilities') or [])} req={len(full.get('requirements') or [])} url={full.get('source_url')}")
+    assert ok_bili, full
+
+    status, run = call("POST", "/api/admin/scrape", {"source": "meituan"}, token=token)
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    print(f"[{'ok' if res.get('created') == 2 else 'fail'}] meituan run {json.dumps(res, ensure_ascii=False)}")
+    assert task["status"] == "done" and res["created"] == 2, res
+
+    jobs = call("GET", "/api/jobs/shared", token=token)[1]
+    mt = [j for j in jobs if j["source_type"] == "meituan"]
+    data_job = next(j for j in mt if "数据开发" in j["title"])
+    ok_mt = (
+        len(mt) == 2
+        and data_job["location"] == "北京市、上海市"
+        and data_job["experience_required"] == "3-5年"
+        and data_job["department"] == "数据/算法"
+    )
+    print(f"[{'ok' if ok_mt else 'fail'}] meituan jobs={len(mt)} location={data_job['location']} years={data_job['experience_required']}")
+    assert ok_mt, mt
+
+    by_name = {s["source"]: s for s in call("GET", "/api/admin/scrape/sources", token=token)[1]}
+    assert by_name["bilibili"]["active_jobs"] == 2 and by_name["meituan"]["active_jobs"] == 2, by_name
+    assert by_name["bytedance"]["active_jobs"] == 0, by_name["bytedance"]
 
     print("\nSMOKE OK")
     return 0

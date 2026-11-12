@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     mihoyo_base_url: str = "https://ats.openout.mihoyo.com"
     tencent_base_url: str = "https://careers.tencent.com/tencentcareer/api"
 
+    # 岗位采集（Phase 4）：浏览器驱动站点与纯 HTTP 站点
+    scraper_browser_channel: str = "msedge"  # 复用系统 Edge，避免额外下载浏览器
+    scraper_headless: bool = True
+    scraper_browser_timeout_ms: int = 90_000
+    scraper_max_pages: int = 20  # 浏览器驱动站点的默认页数上限（每页 10 条）
+    bytedance_list_url: str = "https://jobs.bytedance.com/experienced/position"
+    bilibili_base_url: str = "https://jobs.bilibili.com"
+    meituan_base_url: str = "https://zhaopin.meituan.com"
+
 
 @lru_cache
 def get_settings() -> Settings:

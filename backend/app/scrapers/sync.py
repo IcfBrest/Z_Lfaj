@@ -16,7 +16,7 @@ from typing import Any, Callable
 from sqlalchemy.orm import Session
 
 from ..models import Company, JobPosting, utcnow
-from .base import HttpError, JobRecord, SourceAdapter
+from .base import HttpError, JobRecord, SourceAdapter, iter_pages
 
 BATCH_COMMIT = 50
 MAX_PAGES = 200
@@ -148,10 +148,10 @@ def sync_jobs(
     processed = 0
     total = 0
     page_no = 1
-    while page_no <= MAX_PAGES:
-        items, total = source.list_page(page_no)
+    for page_no, items, page_total in iter_pages(source, limit, max_pages=MAX_PAGES):
         if not items:
             break
+        total = page_total or total
         for item in items:
             if limit is not None and processed >= limit:
                 break
@@ -182,11 +182,6 @@ def sync_jobs(
                     progress(processed, total or processed, page_no)
         if limit is not None and processed >= limit:
             break
-        if len(items) < source.page_size:
-            break
-        if total and processed >= total:
-            break
-        page_no += 1
 
     db.commit()
     if limit is None and seen_ids:

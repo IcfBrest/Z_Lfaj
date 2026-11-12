@@ -7,12 +7,13 @@
 
 from __future__ import annotations
 
+import http.cookiejar
 import json
 import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import Any, Callable, Protocol
+from typing import Any, Callable, Iterator, Protocol
 
 DEFAULT_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -72,6 +73,29 @@ def split_lines(text: Any) -> list[str]:
     return items
 
 
+def split_sections(text: Any, markers: Iterable[str]) -> dict[str, list[str]]:
+    """把「工作职责：…\\n任职要求：…」这类整段正文按小标题切成多段条目。
+
+    返回 {小标题: 条目列表}，未命中任何小标题时返回 {"": split_lines(text)}，
+    调用方据此决定把整段当职责还是要求。
+    """
+    if text is None:
+        return {}
+    raw = str(text).replace("\r\n", "\n").replace("\r", "\n")
+    hits = sorted(
+        ((raw.find(marker), marker) for marker in markers if raw.find(marker) >= 0),
+        key=lambda pair: pair[0],
+    )
+    if not hits:
+        return {"": split_lines(raw)}
+    sections: dict[str, list[str]] = {}
+    for index, (position, marker) in enumerate(hits):
+        end = hits[index + 1][0] if index + 1 < len(hits) else len(raw)
+        body = raw[position + len(marker) : end]
+        sections[marker] = split_lines(body.lstrip(":： \n"))
+    return sections
+
+
 @dataclass
 class JobRecord:
     external_id: str
@@ -122,7 +146,13 @@ class HttpClient:
     calls: int = 0
 
     def __post_init__(self) -> None:
-        self._opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        # 带上 cookie jar：部分站点（如哔哩哔哩）会在换取 csrf 时下发 buvid 类 cookie，
+        # 后续请求带上更接近真实浏览器行为。
+        self._cookies = http.cookiejar.CookieJar()
+        self._opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({}),
+            urllib.request.HTTPCookieProcessor(self._cookies),
+        )
 
     def _throttle(self) -> None:
         if self.min_interval <= 0:
@@ -191,3 +221,32 @@ class SourceAdapter(Protocol):
 
     def normalize(self, item: dict[str, Any], detail: dict[str, Any] | None = None) -> JobRecord:
         """把列表条目（可合并详情）转成统一记录。"""
+
+
+def iter_pages(
+    source: SourceAdapter,
+    limit: int | None = None,
+    *,
+    max_pages: int = 200,
+) -> Iterator[tuple[int, list[dict[str, Any]], int]]:
+    """统一的分页迭代器，产出（页码、本页条目、站点声明的总条数）。
+
+    适配器可以自定义 `pages(limit)`（例如浏览器驱动站点必须在同一个会话里连续翻页），
+    否则按 `list_page(page_no)` 逐页取，行为与 Phase 3 的内联循环完全一致。
+    """
+    custom = getattr(source, "pages", None)
+    if callable(custom):
+        yield from custom(limit)
+        return
+
+    page_no = 1
+    while page_no <= max_pages:
+        items, total = source.list_page(page_no)
+        if not items:
+            return
+        yield page_no, items, total
+        if len(items) < source.page_size:
+            return
+        if total and page_no * len(items) >= total:
+            return
+        page_no += 1
