@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .db import Base
@@ -70,6 +70,10 @@ class JobPosting(Base):
     """平台共享岗位（管理员导入/采集）。user_manual_jobs 与其字段同构。"""
 
     __tablename__ = "job_postings"
+    __table_args__ = (
+        # 采集去重键：同一站点同一外部 id 只应有一行（手动导入的岗位 external_id 为 NULL）
+        Index("uq_job_postings_source_external", "company_id", "source_type", "external_id", unique=True),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"), index=True)
@@ -87,6 +91,8 @@ class JobPosting(Base):
     description_raw: Mapped[str] = mapped_column(Text)
     source_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
     source_type: Mapped[str] = mapped_column(String(32), default="manual")
+    # 采集来源的站点内部 id（手动导入的岗位为 NULL）
+    external_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     scraped_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

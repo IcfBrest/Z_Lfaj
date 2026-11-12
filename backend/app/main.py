@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import llm_gateway
-from .api import admin, auth, companies, costs, jobs, matches, providers, resumes, suggestions, tasks
+from .api import admin, auth, companies, costs, jobs, matches, providers, resumes, scrape, suggestions, tasks
 from .config import get_settings
 
 
@@ -41,6 +41,7 @@ def create_app() -> FastAPI:
     app.include_router(suggestions.router)
     app.include_router(tasks.router)
     app.include_router(costs.router)
+    app.include_router(scrape.router)
 
     @app.get("/healthz")
     def healthz() -> dict:

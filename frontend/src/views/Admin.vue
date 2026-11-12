@@ -7,12 +7,17 @@ const invitations = ref([])
 const companyName = ref('')
 const careerUrl = ref('')
 const companies = ref([])
+const sources = ref([])
+const scrapes = ref({})
+const scrapeLimit = ref('')
+const listOnly = ref(false)
 const message = ref('')
 
 async function refresh() {
   users.value = await api.get('/admin/users')
   invitations.value = await api.get('/admin/invitations')
   companies.value = await api.get('/companies')
+  sources.value = await api.get('/admin/scrape/sources')
 }
 
 async function genInvite() {
@@ -56,6 +61,53 @@ async function addCompany() {
   }
 }
 
+function fmtTime(value) {
+  return value ? new Date(value).toLocaleString() : '从未同步'
+}
+
+function setScrape(source, status, text) {
+  scrapes.value = { ...scrapes.value, [source]: { status, text } }
+}
+
+async function syncSource(source) {
+  const body = { source, fetch_detail: !listOnly.value }
+  const limit = parseInt(scrapeLimit.value, 10)
+  if (limit > 0) body.limit = limit
+  try {
+    const r = await api.post('/admin/scrape', body)
+    setScrape(source, 'running', '同步中…')
+    pollScrape(source, r.task_id)
+  } catch (e) {
+    setScrape(source, 'failed', e.message)
+  }
+}
+
+function pollScrape(source, taskId) {
+  const timer = setInterval(async () => {
+    let task
+    try {
+      task = await api.get(`/tasks/${taskId}`)
+    } catch (e) {
+      clearInterval(timer)
+      setScrape(source, 'failed', e.message)
+      return
+    }
+    if (task.status === 'done') {
+      clearInterval(timer)
+      const r = task.result || {}
+      setScrape(
+        source,
+        'done',
+        `新增 ${r.created}、更新 ${r.updated}、未变 ${r.unchanged}、下架 ${r.deactivated}、失败 ${r.failed}｜站点共 ${r.total} 条`,
+      )
+      await refresh()
+    } else if (task.status === 'failed') {
+      clearInterval(timer)
+      setScrape(source, 'failed', task.error || '同步失败')
+    }
+  }, 1500)
+}
+
 onMounted(refresh)
 </script>
 
@@ -96,6 +148,42 @@ onMounted(refresh)
       <thead><tr><th>公司</th><th>官网</th></tr></thead>
       <tbody>
         <tr v-for="c in companies" :key="c.id"><td>{{ c.name }}</td><td class="muted">{{ c.career_url || '—' }}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3>站点采集</h3>
+    <div class="row">
+      <input v-model="scrapeLimit" placeholder="每站最多抓几条（留空 = 全量）" style="width: 240px" />
+      <label class="muted">
+        <input v-model="listOnly" type="checkbox" />
+        只抓列表，不抓详情
+      </label>
+    </div>
+    <p class="muted">采集是后台任务：先抓列表、再逐条抓详情，按外部 id 去重；整轮跑完后才把站点上已消失的岗位标为下架。</p>
+    <table>
+      <thead><tr><th>站点</th><th>在架 / 累计</th><th>最近同步</th><th>操作</th></tr></thead>
+      <tbody>
+        <tr v-for="s in sources" :key="s.source">
+          <td>
+            <strong>{{ s.company }}</strong>
+            <div class="muted">{{ s.source }}</div>
+          </td>
+          <td>{{ s.active_jobs }} / {{ s.total_jobs }}</td>
+          <td class="muted">{{ fmtTime(s.last_scraped_at) }}</td>
+          <td>
+            <button
+              :disabled="scrapes[s.source] && scrapes[s.source].status === 'running'"
+              @click="syncSource(s.source)"
+            >
+              {{ scrapes[s.source] && scrapes[s.source].status === 'running' ? '同步中…' : '同步' }}
+            </button>
+            <div v-if="scrapes[s.source]" class="muted" :class="{ error: scrapes[s.source].status === 'failed' }">
+              {{ scrapes[s.source].text }}
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>

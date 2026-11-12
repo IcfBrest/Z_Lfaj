@@ -182,6 +182,72 @@ def main() -> int:
     print(f"[{'ok' if suggest_calls and suggest_calls[0]['calls'] == 1 else 'fail'}] suggest calls={json.dumps(suggest_calls, ensure_ascii=False)}")
     assert suggest_calls and suggest_calls[0]["calls"] == 1, costs
 
+    # ---- Phase 3：站点采集（本地桩站点，真实走 urllib + 限速 + 去重 + 下架） ----
+    status, sources = call("GET", "/api/admin/scrape/sources", token=token)
+    names = {s["source"] for s in sources or []}
+    print(f"[{'ok' if names == {'mihoyo', 'tencent'} else 'fail'}] scrape sources {names}")
+    assert status == 200 and names == {"mihoyo", "tencent"}, sources
+
+    status, run = call("POST", "/api/admin/scrape", {"source": "mihoyo"}, token=token)
+    print(f"[{'ok' if status == 202 else 'fail'}] mihoyo scrape run {status} {run}")
+    assert status == 202, run
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    print(f"[info] mihoyo first run {json.dumps(res, ensure_ascii=False)}")
+    assert task["status"] == "done", task
+    assert (res["created"], res["updated"], res["unchanged"], res["failed"]) == (3, 0, 0, 0), res
+
+    status, jobs = call("GET", "/api/jobs/shared", token=token)
+    scraped = [j for j in jobs if j["source_type"] == "mihoyo"]
+    print(f"[{'ok' if len(scraped) == 3 else 'fail'}] shared jobs after scrape={len(scraped)}")
+    assert len(scraped) == 3, scraped
+    target_job = next(j for j in scraped if "服务端" in j["title"])
+    status, full = call("GET", f"/api/jobs/shared/{target_job['id']}", token=token)
+    ok_detail = "【职责】" in (full.get("description_raw") or "") and bool(full.get("requirements"))
+    print(f"[{'ok' if ok_detail else 'fail'}] job detail has 职责/要求, url={full.get('source_url')}")
+    assert ok_detail, full
+    assert full["source_url"].startswith("https://jobs.mihoyo.com/#/position/"), full["source_url"]
+
+    status, run = call("POST", "/api/admin/scrape", {"source": "mihoyo"}, token=token)
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    print(f"[{'ok' if res.get('created') == 0 and res.get('unchanged') == 3 else 'fail'}] mihoyo second run {json.dumps(res, ensure_ascii=False)}")
+    assert (res["created"], res["unchanged"], res["deactivated"]) == (0, 3, 0), res
+
+    # 腾讯：先 limit=1 截断跑（不下架），再全量跑（补齐第二条）
+    status, run = call("POST", "/api/admin/scrape", {"source": "tencent", "limit": 1}, token=token)
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    assert task["status"] == "done" and res["created"] == 1, res
+    assert res["deactivated"] == 0, res
+    status, run = call("POST", "/api/admin/scrape", {"source": "tencent"}, token=token)
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    print(f"[{'ok' if res.get('created') == 1 and res.get('unchanged') == 1 else 'fail'}] tencent full run {json.dumps(res, ensure_ascii=False)}")
+    assert (res["created"], res["unchanged"], res["deactivated"]) == (1, 1, 0), res
+
+    jobs = call("GET", "/api/jobs/shared", token=token)[1]
+    tencent = [j for j in jobs if j["source_type"] == "tencent"]
+    years = {j["title"]: j["experience_required"] for j in tencent}
+    ok_tencent = len(tencent) == 2 and years.get("后台开发工程师（腾讯云）") == "3年以上工作经验"
+    print(f"[{'ok' if ok_tencent else 'fail'}] tencent jobs={len(tencent)} years={json.dumps(years, ensure_ascii=False)}")
+    assert ok_tencent, tencent
+
+    status, sources = call("GET", "/api/admin/scrape/sources", token=token)
+    by_name = {s["source"]: s for s in sources}
+    print(f"[info] sources {json.dumps(sources, ensure_ascii=False)}")
+    assert by_name["mihoyo"]["active_jobs"] == 3 and by_name["mihoyo"]["total_jobs"] == 3, by_name["mihoyo"]
+    assert by_name["tencent"]["active_jobs"] == 2 and by_name["tencent"]["last_scraped_at"], by_name["tencent"]
+
+    # 采集结果直接进共享库并可被匹配
+    status, run = call("POST", "/api/matches/run", {}, token=token)
+    task = wait_task(run["task_id"], token)
+    res = task.get("result") or {}
+    print(f"[{'ok' if res.get('scored', 0) >= 5 else 'fail'}] match after scrape scored={res.get('scored')} cached={res.get('cached')}")
+    assert task["status"] == "done" and res.get("scored", 0) >= 5, res
+    titles = {m["title"] for m in call("GET", "/api/matches", token=token)[1]}
+    assert "服务端开发工程师（原神）" in titles, titles
+
     print("\nSMOKE OK")
     return 0
 

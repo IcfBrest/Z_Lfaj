@@ -13,14 +13,19 @@ $env:ENCRYPTION_KEY = 'smoke-encryption-key'
 # 本机回环不走系统代理（litellm/httpx 只认环境变量，注册表代理会让请求打到 29290 拿到 502）
 $env:NO_PROXY = '127.0.0.1,localhost'
 $env:no_proxy = '127.0.0.1,localhost'
+# 采集指向本地桩站点，并把限速间隔调小以缩短冒烟时间
+$env:MIHOYO_BASE_URL = 'http://127.0.0.1:8097/mihoyo'
+$env:TENCENT_BASE_URL = 'http://127.0.0.1:8097/tencent'
+$env:SCRAPER_MIN_INTERVAL = '0.05'
 Remove-Item -Force -ErrorAction SilentlyContinue '.\data\smoke-e2e.db'
 
 Write-Output '[..] 初始化数据库（alembic upgrade head）'
 & $python -m alembic upgrade head
 if ($LASTEXITCODE -ne 0) { throw 'alembic upgrade head 失败' }
 
-Write-Output '[..] 启动桩服务 :8099'
+Write-Output '[..] 启动桩服务 :8099（LLM）与 :8097（招聘站点）'
 $stub = Start-Process -FilePath $python -ArgumentList 'tools\smoke_llm_stub.py' -PassThru -WindowStyle Hidden
+$siteStub = Start-Process -FilePath $python -ArgumentList 'tools\smoke_scrape_stub.py' -PassThru -WindowStyle Hidden
 Write-Output '[..] 启动 uvicorn :8098'
 $apiLog = Join-Path $root 'data\smoke-api.log'
 $api = Start-Process -FilePath $python -ArgumentList '-m','uvicorn','app.main:app','--host','127.0.0.1','--port','8098' -PassThru -WindowStyle Hidden -RedirectStandardError $apiLog -RedirectStandardOutput (Join-Path $root 'data\smoke-api.out.log')
@@ -39,10 +44,19 @@ try {
         throw '后端 20 秒内未就绪'
     }
 
+    $siteReady = $false
+    for ($i = 0; $i -lt 20; $i++) {
+        try {
+            $resp = Invoke-WebRequest -Uri 'http://127.0.0.1:8097/health' -UseBasicParsing -NoProxy -TimeoutSec 2
+            if ($resp.StatusCode -eq 200) { $siteReady = $true; break }
+        } catch { Start-Sleep -Milliseconds 300 }
+    }
+    if (-not $siteReady) { throw '招聘站点桩 8097 未就绪' }
+
     & $python tools\smoke_e2e.py
     $code = $LASTEXITCODE
 } finally {
-    foreach ($proc in @($api, $stub)) {
+    foreach ($proc in @($api, $stub, $siteStub)) {
         if ($proc -and -not $proc.HasExited) { Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue }
     }
     Start-Sleep -Milliseconds 300

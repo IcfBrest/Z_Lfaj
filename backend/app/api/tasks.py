@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..models import BackgroundTask, User, utcnow
+from ..scrapers.runner import run_company_scrape
 from .deps import get_current_user
 from .jobs import run_job_parse
 from .matches import run_match_job, run_match_run
@@ -48,6 +49,7 @@ def retry_task(
         "match_run": run_match_run,
         "match_job": run_match_job,
         "suggestion_generate": run_suggestion_generate,
+        "company_scrape": run_company_scrape,
     }.get(task.kind)
     if runner is None:
         raise HTTPException(400, f"不支持重试的任务类型：{task.kind}")
