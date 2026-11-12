@@ -1,7 +1,7 @@
 {
   "mode": "inline",
   "source": "approved-plan",
-  "rationale": "用户 m02052 指令\"开始\"进入 Phase 4：采集字节跳动/B站/美团三家站点",
+  "rationale": "执行期勾选 tasks.md 完成项并补充执行记录（不改变范围），重新对齐 artifacts hash",
   "waves": [
     {
       "id": "implementation",
@@ -19,11 +19,11 @@
       "depends_on": []
     }
   ],
-  "artifacts_hash": "sha256:717f90df5548743c23b37ca9b871f6b01cfa97481ae0af3ba24482427022e9b7",
+  "artifacts_hash": "sha256:b43948c573007fc216ea420d3b3bbd7b35b3929ddfd72acbdb0f7e72acc2ad8b",
   "contract_hash": null,
   "workflow": "full",
-  "revision": 1,
+  "revision": 2,
   "schema_version": 2,
   "review_policy": "final",
-  "hash": "sha256:63fc6557fa4058d56f976634eea669c0ff06c874b9c5fc11e87f8d87b64e03e9"
+  "hash": "sha256:52668725f4d6e1f8b58ec22663525ddc891345fbf18177a02b38323a72a28850"
 }

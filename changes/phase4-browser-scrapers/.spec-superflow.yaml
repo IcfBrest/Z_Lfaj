@@ -2,15 +2,15 @@
 # Progress and legacy approvals. Recover missing evidence; never infer approval from artifact existence.
 
 # === Core state ===
-state: executing
+state: closing
 workflow: full
 workflow_variant: planned
-completion_outcome: null
+completion_outcome: verified
 completion_reason: null
 revision: null
 
 # === Hashes (fast staleness detection) ===
-artifacts_hash: sha256:717f90df5548743c23b37ca9b871f6b01cfa97481ae0af3ba24482427022e9b7
+artifacts_hash: sha256:b43948c573007fc216ea420d3b3bbd7b35b3929ddfd72acbdb0f7e72acc2ad8b
 contract_hash: null
 
 # === Execution progress ===
@@ -18,13 +18,13 @@ execution_mode: null
 execution_plan_hash: null
 execution_plan_revision: null
 batches_completed: 0
-test_result: null
+test_result: pass: cd backend && .venv\Scripts\python.exe -m pytest -q
 spec_merged: true
 spec_publication_receipt: eyJ2ZXJzaW9uIjoxLCJzb3VyY2VfaGFzaCI6InNoYTI1Njo1YjcyZWMzNjI3NDRkMjMxMjllNzM5M2JiZmI5OTU5M2Y2NGE0N2JiMWIyOWI5NzEwOTQ5N2Y2Y2QwYTNmZWY5IiwiYmFzZWxpbmVfYmVmb3JlX2hhc2giOiJzaGEyNTY6MjlmOGI4ZTRjY2YzMTU0NjIxYTI1ZTdmMWQyMjJkODIxNzU3MzAzNzY3ODU4NDcxMjZmYzVlZmFjMjQ1NzZiZSIsImJhc2VsaW5lX2FmdGVyX2hhc2giOiJzaGEyNTY6ZGI2YjM0ODU4YTY2NjE2NDRlYThmY2FhZDE0ZDkzYTkzMDgyYTdiMmUxZWE0M2U2YjQ4NjAzYzZlYTdhYWE4NSIsImNhcGFiaWxpdGllcyI6WyJwbGF0Zm9ybS1jb3JlIl19
 
 # === Metadata ===
 change_name: phase4-browser-scrapers
-last_transition: 2026-11-12T12:29:47.263Z
+last_transition: 2026-11-12T14:23:55.452Z
 last_transition_from: null
 last_transition_to: null
 
