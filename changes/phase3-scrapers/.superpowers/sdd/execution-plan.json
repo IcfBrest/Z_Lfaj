@@ -1,7 +1,7 @@
 {
   "mode": "inline",
   "source": "approved-plan",
-  "rationale": "用户 2026-11-12 指令\"继续\"进入 Phase 3，并在范围提问中确认：管理后台手动按钮触发采集、抓列表字段+详情全文、不调用 LLM",
+  "rationale": "执行期勾选 tasks.md 完成项并补充执行记录（不改变范围），重新对齐 artifacts hash",
   "waves": [
     {
       "id": "implementation",
@@ -19,11 +19,11 @@
       "depends_on": []
     }
   ],
-  "artifacts_hash": "sha256:fe898f246c6fefd0fd238c26e8e80cb97a194991cdb0b8fa0675659830582f66",
+  "artifacts_hash": "sha256:a2fabc0e18e97bc438ce3e218cff7c529a48d0b6c97122d9d4114633b2d2cfd5",
   "contract_hash": null,
   "workflow": "full",
-  "revision": 1,
+  "revision": 2,
   "schema_version": 2,
   "review_policy": "final",
-  "hash": "sha256:d3ccd0d864928a98294719adff12b97aa8a3d3e329022af5c9a9be086e84b134"
+  "hash": "sha256:d03a8878029c4e71316387331c9dfab76657bd780734d35dfe81206afdf39881"
 }
