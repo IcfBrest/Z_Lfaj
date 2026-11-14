@@ -20,9 +20,49 @@ const detailLoading = ref(false)
 const suggestion = ref(null)
 const suggestTask = ref(null)
 const suggestMessage = ref('')
+const applied = ref({}) // `${refType}:${refId}` -> application_id
+const applyMessage = ref('')
 let timer = null
 
 const jobs = computed(() => (tab.value === 'shared' ? sharedJobs.value : myJobs.value))
+
+function refTypeOf(tabName) {
+  return tabName === 'shared' ? 'job_posting' : 'user_manual_job'
+}
+
+function appliedId(refType, jobId) {
+  return applied.value[`${refType}:${jobId}`]
+}
+
+async function loadApplied() {
+  try {
+    const rows = await api.get('/applications?limit=500')
+    const map = {}
+    rows.forEach((row) => {
+      map[`${row.job_ref_type}:${row.job_ref_id}`] = row.id
+    })
+    applied.value = map
+  } catch {
+    applied.value = {}
+  }
+}
+
+async function applyJob(job, refType = refTypeOf(tab.value)) {
+  applyMessage.value = ''
+  try {
+    const row = await api.post('/applications', { job_ref_type: refType, job_ref_id: job.id })
+    applied.value = { ...applied.value, [`${refType}:${job.id}`]: row.id }
+    applyMessage.value = `已记录投递：${row.title}`
+  } catch (e) {
+    if (e.status === 409) {
+      const id = e.detail && e.detail.application_id
+      applied.value = { ...applied.value, [`${refType}:${job.id}`]: id }
+      applyMessage.value = '这个岗位已经投过了'
+    } else {
+      applyMessage.value = e.message
+    }
+  }
+}
 
 function scoreClass(score) {
   if (score === null || score === undefined) return 'gray'
@@ -185,6 +225,7 @@ async function toggleSort() {
 
 onMounted(async () => {
   await refresh()
+  await loadApplied()
   timer = setInterval(poll, 1500)
 })
 onUnmounted(() => clearInterval(timer))
@@ -245,6 +286,8 @@ onUnmounted(() => clearInterval(timer))
           <td class="row">
             <button class="secondary" :disabled="scoreTask !== null" @click="scoreOne(j)">打分</button>
             <button v-if="j.match_id" class="secondary" @click="openDetail(j)">详情</button>
+            <router-link v-if="appliedId(refTypeOf(tab), j.id)" to="/applications" class="tag green">已投递 · 查看</router-link>
+            <button v-else class="secondary" @click="applyJob(j)">标记已投递</button>
           </td>
         </tr>
         <tr v-if="jobs.length === 0">
@@ -265,7 +308,22 @@ onUnmounted(() => clearInterval(timer))
         <span class="muted">{{ detail.company }}｜{{ detail.location || '城市未知' }}</span>
         <span :class="['tag', scoreClass(detail.score)]">总分 {{ detail.score }}</span>
         <span class="tag gray">{{ detail.verdict || '—' }}</span>
+        <router-link
+          v-if="appliedId(detail.job_ref_type, detail.job_ref_id)"
+          to="/applications"
+          class="tag green"
+        >
+          已投递 · 查看
+        </router-link>
+        <button
+          v-else
+          class="secondary"
+          @click="applyJob({ id: detail.job_ref_id, title: detail.title }, detail.job_ref_type)"
+        >
+          标记已投递
+        </button>
       </div>
+      <p v-if="applyMessage" class="muted">{{ applyMessage }}</p>
       <table style="margin-bottom: 12px">
         <thead>
           <tr><th>维度</th><th>得分</th><th>权重</th></tr>

@@ -197,6 +197,57 @@ class Suggestion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class Application(Base):
+    """Phase 5：一条投递记录。岗位信息在投递时快照，避免采集更新后历史漂移。"""
+
+    __tablename__ = "applications"
+    __table_args__ = (UniqueConstraint("user_id", "job_ref_type", "job_ref_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    job_ref_type: Mapped[str] = mapped_column(String(32))  # job_posting | user_manual_job
+    job_ref_id: Mapped[int] = mapped_column(Integer)
+    resume_id: Mapped[int | None] = mapped_column(ForeignKey("resumes.id"), nullable=True)
+    match_result_id: Mapped[int | None] = mapped_column(ForeignKey("match_results.id"), nullable=True)
+    company_name: Mapped[str] = mapped_column(String(128))
+    title: Mapped[str] = mapped_column(String(255))
+    location: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    match_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="applied")
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    last_activity_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+    events: Mapped[list["ApplicationEvent"]] = relationship(
+        back_populates="application",
+        cascade="all, delete-orphan",
+        order_by="ApplicationEvent.id",
+    )
+
+
+class ApplicationEvent(Base):
+    """状态推进事件，构成投递时间线。"""
+
+    __tablename__ = "application_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey("applications.id", ondelete="CASCADE"), index=True
+    )
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    from_status: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    to_status: Mapped[str] = mapped_column(String(16))
+    note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    application: Mapped[Application] = relationship(back_populates="events")
+
+
 class MatchResult(Base):
     """预留：Phase 1 匹配打分。Phase 0 仅建表。"""
 

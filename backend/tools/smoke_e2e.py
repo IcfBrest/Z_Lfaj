@@ -293,6 +293,49 @@ def main() -> int:
     assert by_name["bilibili"]["active_jobs"] == 2 and by_name["meituan"]["active_jobs"] == 2, by_name
     assert by_name["bytedance"]["active_jobs"] == 0, by_name["bytedance"]
 
+    # ---- Phase 5：投递记录（快照 + 状态机 + 时间线 + 统计 + 重复冲突） ----
+    target = next(j for j in call("GET", "/api/jobs/shared", token=token)[1] if "服务端" in j["title"])
+    status, created = call(
+        "POST",
+        "/api/applications",
+        {"job_ref_type": "job_posting", "job_ref_id": target["id"], "note": "内推：老同事"},
+        token=token,
+    )
+    print(f"[{'ok' if status == 201 else 'fail'}] apply {status} {created}")
+    assert status == 201 and created["status"] == "applied", created
+    assert created["company_name"] and created["title"] == target["title"], created
+    assert created["days_since_update"] == 0 and created["is_stale"] is False, created
+
+    status, dup = call(
+        "POST",
+        "/api/applications",
+        {"job_ref_type": "job_posting", "job_ref_id": target["id"]},
+        token=token,
+    )
+    print(f"[{'ok' if status == 409 else 'fail'}] duplicate apply {status}")
+    assert status == 409 and dup["detail"]["application_id"] == created["id"], dup
+
+    status, moved = call(
+        "PATCH", f"/api/applications/{created['id']}", {"status": "interview", "note": "约了下周三"}, token=token
+    )
+    print(f"[{'ok' if status == 200 and moved['status'] == 'interview' else 'fail'}] transition {status} {moved}")
+    assert status == 200 and moved["status"] == "interview", moved
+
+    status, detail = call("GET", f"/api/applications/{created['id']}", token=token)
+    tos = [e["to_status"] for e in detail.get("events") or []]
+    print(f"[{'ok' if tos == ['applied', 'interview'] else 'fail'}] timeline {tos}")
+    assert tos == ["applied", "interview"], detail
+
+    status, blocked = call("PATCH", f"/api/applications/{created['id']}", {"status": "unknown"}, token=token)
+    print(f"[{'ok' if status == 400 else 'fail'}] illegal status {status}")
+    assert status == 400, blocked
+
+    status, rows = call("GET", "/api/applications", token=token)
+    assert status == 200 and len(rows) == 1 and rows[0]["id"] == created["id"], rows
+    status, stats = call("GET", "/api/applications/stats", token=token)
+    print(f"[info] application stats {json.dumps(stats, ensure_ascii=False)}")
+    assert stats["total"] == 1 and stats["by_status"]["interview"] == 1 and stats["stale"] == 0, stats
+
     print("\nSMOKE OK")
     return 0
 

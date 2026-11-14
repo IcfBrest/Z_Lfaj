@@ -1,0 +1,29 @@
+{
+  "mode": "inline",
+  "source": "approved-plan",
+  "rationale": "执行期勾选 tasks.md 完成项并补充执行记录（不改变范围），重新对齐 artifacts hash",
+  "waves": [
+    {
+      "id": "implementation",
+      "strategy": "serial",
+      "tasks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "depends_on": []
+    }
+  ],
+  "artifacts_hash": "sha256:4cb15a5b48c36d19292358fc986b9394ef82f5d919abaa50d7bbd75ab2585caf",
+  "contract_hash": null,
+  "workflow": "full",
+  "revision": 2,
+  "schema_version": 2,
+  "review_policy": "final",
+  "hash": "sha256:7110ed48a3ca31e1fc7d7f8f9dece709db41aea8ae792a6e3636c649a88666b6"
+}

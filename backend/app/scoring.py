@@ -68,6 +68,7 @@ class JobView:
     experience_required: str | None = None
     education_required: str | None = None
     salary_range: str | None = None
+    source_url: str | None = None
     skills: list[str] = field(default_factory=list)
     responsibilities: list[str] = field(default_factory=list)
     requirements: list[str] = field(default_factory=list)
@@ -101,6 +102,7 @@ def _view_from(job, ref_type: str, company: str | None) -> JobView:
         experience_required=job.experience_required,
         education_required=job.education_required,
         salary_range=job.salary_range,
+        source_url=job.source_url,
         skills=list(job.skills or []),
         responsibilities=list(job.responsibilities or []),
         requirements=list(job.requirements or []),

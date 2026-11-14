@@ -21,6 +21,7 @@ function logout() {
     <nav class="sidebar">
       <h2>AI 求职助手</h2>
       <router-link to="/">岗位</router-link>
+      <router-link to="/applications">投递</router-link>
       <router-link to="/resumes">简历</router-link>
       <router-link to="/settings">设置</router-link>
       <router-link v-if="isAdmin" to="/admin">管理</router-link>
