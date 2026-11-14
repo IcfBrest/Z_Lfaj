@@ -2,10 +2,10 @@
 # Progress and legacy approvals. Recover missing evidence; never infer approval from artifact existence.
 
 # === Core state ===
-state: executing
+state: closing
 workflow: full
 workflow_variant: planned
-completion_outcome: null
+completion_outcome: verified
 completion_reason: null
 revision: null
 
@@ -18,13 +18,13 @@ execution_mode: null
 execution_plan_hash: null
 execution_plan_revision: null
 batches_completed: 0
-test_result: null
+test_result: pass: cd backend && .venv\Scripts\python.exe -m pytest -q
 spec_merged: true
 spec_publication_receipt: eyJ2ZXJzaW9uIjoxLCJzb3VyY2VfaGFzaCI6InNoYTI1NjoxZjI0MzYyNjFkNzdmMzZlNTRjOTRlMThhYTdiNTU3N2I1ZTA2ZTA3NmY3YWIwZjY5NTE4YTdiNjAxOTRjZmNiIiwiYmFzZWxpbmVfYmVmb3JlX2hhc2giOiJzaGEyNTY6NDBiMGNlM2U0Y2RmN2NkZTIxNmNmNDZiNmRlODlmNzk4ZWMzMTc3OTkwYjRmZmVlMDEzOWMzN2Y0ZjJhMjA3NSIsImJhc2VsaW5lX2FmdGVyX2hhc2giOiJzaGEyNTY6NDQzOTgzMWFjOGM0Njg2ODYyMjg1YmM3MGFkYjIwMDdjYTA1NjIwMjQwZDQyYmM1Nzg2ZjViMjdlZGY2M2U2YiIsImNhcGFiaWxpdGllcyI6WyJwbGF0Zm9ybS1jb3JlIl19
 
 # === Metadata ===
 change_name: phase5-applications
-last_transition: 2026-11-14T15:43:42.161Z
+last_transition: 2026-11-14T15:45:26.161Z
 last_transition_from: null
 last_transition_to: null
 
